@@ -1,0 +1,68 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:16
+
+    container_name: postgres-db
+
+    restart: always
+
+    environment:
+      POSTGRES_DB: fsmdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: robin8181
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  backend:
+    build:
+      context: ./keystone-backend
+
+    container_name: springboot-app
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/fsmdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: robin8181
+
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+
+      APP_CORS_ALLOWED_ORIGIN: http://localhost:3000
+
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+
+    container_name: react-app
+
+    depends_on:
+      - backend
+
+    ports:
+      - "3000:80"
+
+    restart: always
+
+volumes:
+  postgres-data:

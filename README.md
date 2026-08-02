@@ -14,10 +14,15 @@ CREATE DATABASE fsmdb;
 If your PostgreSQL user/password is not `postgres/postgres`, update:
 `backend/src/main/resources/application.properties`
 
-### 2. Backend
+### 2. Keystone-Backend
 ```bash
-cd backend
+cd keystone-backend
 mvn spring-boot:run
+```
+or 
+```bash
+cd keystone-backend
+.\mvnw spring-boot:run
 ```
 
 ### 3. Frontend
