@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { login } from "../services/authService";
 
 export default function Login({ onLogin, goSignup }) {
@@ -9,6 +10,7 @@ export default function Login({ onLogin, goSignup }) {
   });
 
   const [err, setErr] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -23,7 +25,7 @@ export default function Login({ onLogin, goSignup }) {
       onLogin(data);
 
     } catch (x) {
-      setErr("Login failed. Check email/password.");
+      setErr("Login failed. Check your email/password.");
     }
   };
 
@@ -55,17 +57,27 @@ export default function Login({ onLogin, goSignup }) {
           }
         />
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={e =>
-            setForm({
-              ...form,
-              password: e.target.value
-            })
-          }
-        />
+        <div className="password-field">
+          <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={form.password}
+              onChange={(e) =>
+                  setForm({
+                    ...form,
+                    password: e.target.value,
+                  })
+              }
+          />
+
+          <button
+              type="button"
+              className="eye-btn"
+              onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </button>
+        </div>
 
         <button className="primary">
           Login
