@@ -15,7 +15,7 @@ import java.util.Map;
 public class DashboardService {
 
     private final WorkOrderRepository workRepo;
-    private final AppUserRepository userRepo;
+    private final UserRepository userRepo;
     private final PartRepository partRepo;
     private final CustomerRepository customerRepo;
     private final SiteRepository siteRepo;

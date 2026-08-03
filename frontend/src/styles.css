@@ -503,83 +503,99 @@ th{
 .eye-btn:hover {
     color: #2418f2;
 }
+.action-btn {
+    border: none;
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+.edit-btn {
+    background: #4338ca;
+    color: white;
+}
+
+.edit-btn:hover {
+    background: #3525f2;
+}
+
+.delete-btn {
+    background: #ff1e56;
+    color: white;
+    margin-left: 10px;
+}
+
+.delete-btn:hover {
+    background: #e11d48;
+}
+
+.cancel-btn {
+    background: #6d28d9;
+    color: white;
+    margin-left: 10px;
+}
+
+.cancel-btn:hover {
+    background: #5b21b6;
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    margin: 12px 0;
+    width: fit-content;
+}
+
+.checkbox-row input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    flex: 0 0 auto;
+}
+
+.checkbox-row span {
+    margin: 0;
+}
 /* RESPONSIVE */
 
-@media(max-width:1000px){
+@media (max-width:1000px) {
 
-    .stats-grid{
-        grid-template-columns:repeat(2,1fr);
+    .stats-grid {
+        grid-template-columns: repeat(2,1fr);
     }
 
     .grid-two,
-    .wo-form{
+    .wo-form {
         grid-template-columns:1fr;
     }
 
-    .search{
+    .search {
         display:none;
     }
 
-    .topbar{
+    .topbar {
         flex-wrap:wrap;
         height:auto;
         padding:15px;
     }
 
-    .page{
+    .page {
         padding:20px;
     }
 
-    .hero{
+    .hero {
         flex-direction:column;
         text-align:center;
     }
 
-    .watch{
+    .watch {
         margin:auto;
     }
-
-    .action-btn {
-        border: none;
-        border-radius: 10px;
-        padding: 8px 16px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        font-family: inherit;
-        transition: all 0.3s ease;
-    }
-
-    /* Edit */
-    .edit-btn {
-        background: #4338ca;
-        color: white;
-    }
-
-    .edit-btn:hover {
-        background: #3525f2;
-    }
-
-    /* Delete */
-    .delete-btn {
-        background: #ff1e56;
-        color: white;
-        margin-left: 10px;
-    }
-
-    .delete-btn:hover {
-        background: #e11d48;
-    }
-
-    /* Cancel */
-    .cancel-btn {
-        background: #6d28d9;
-        color: white;
-        margin-left: 10px;
-    }
-
-    .cancel-btn:hover {
-        background: #5b21b6;
-    }
-
 }
+

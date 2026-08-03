@@ -5,7 +5,7 @@ import com.fsm.keystone.dto.AuthResponse;
 import com.fsm.keystone.dto.SignupRequest;
 import com.fsm.keystone.entity.AppUser;
 import com.fsm.keystone.entity.Customer;
-import com.fsm.keystone.repository.AppUserRepository;
+import com.fsm.keystone.repository.UserRepository;
 import com.fsm.keystone.repository.CustomerRepository;
 import com.fsm.keystone.security.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final AppUserRepository userRepository;
+    private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;

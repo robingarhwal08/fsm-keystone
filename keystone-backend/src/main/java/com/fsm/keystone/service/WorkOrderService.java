@@ -14,7 +14,7 @@ import com.fsm.keystone.entity.StatusHistory;
 import com.fsm.keystone.entity.TimeLog;
 import com.fsm.keystone.entity.WorkOrder;
 import com.fsm.keystone.enums.WorkOrderStatus;
-import com.fsm.keystone.repository.AppUserRepository;
+import com.fsm.keystone.repository.UserRepository;
 import com.fsm.keystone.repository.CustomerRepository;
 import com.fsm.keystone.repository.PartRepository;
 import com.fsm.keystone.repository.PartUsageRepository;
@@ -37,7 +37,7 @@ public class WorkOrderService {
     private final WorkOrderRepository workRepo;
     private final CustomerRepository customerRepo;
     private final SiteRepository siteRepo;
-    private final AppUserRepository userRepo;
+    private final UserRepository userRepo;
     private final StatusHistoryRepository historyRepo;
     private final PartRepository partRepo;
     private final PartUsageRepository partUsageRepo;
@@ -246,14 +246,44 @@ public class WorkOrderService {
             Long id,
             CreateWorkOrderRequest req) {
 
-        WorkOrder wo = workRepo
-                .findById(id)
+        WorkOrder wo = workRepo.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException("Work Order not found"));
 
         wo.setTitle(req.title());
         wo.setDescription(req.description());
         wo.setPriority(req.priority());
+
+        // Update Customer
+        Customer customer = customerRepo.findById(req.customerId())
+                .orElseThrow(() ->
+                        new RuntimeException("Customer not found"));
+
+        wo.setCustomer(customer);
+
+        // Update Site
+        Site site = siteRepo.findById(req.siteId())
+                .orElseThrow(() ->
+                        new RuntimeException("Site not found"));
+
+        wo.setSite(site);
+
+        // Update Technician
+        if (req.assignedTechnicianId() != null) {
+
+            AppUser technician = userRepo.findById(req.assignedTechnicianId())
+                    .orElseThrow(() ->
+                            new RuntimeException("Technician not found"));
+
+            wo.setAssignedTechnician(technician);
+
+            wo.setStatus(WorkOrderStatus.ASSIGNED);
+
+        } else {
+
+            wo.setAssignedTechnician(null);
+
+        }
 
         return workRepo.save(wo);
     }
