@@ -37,7 +37,7 @@ export default function Layout({
       ["sites", "Sites", MapPin],
       ["workorders", "Work Orders", ClipboardList],
       ["parts", "Inventory", Package],
-//       ["users", "Users", UserCog],
+      ["users", "Users", UserCog],
 //       ["reports", "Reports", FileText]
     ];
   }

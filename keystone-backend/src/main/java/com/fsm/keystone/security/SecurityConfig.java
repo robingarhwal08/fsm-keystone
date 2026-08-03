@@ -39,18 +39,25 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
 
+                        // Public APIs
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        .requestMatchers(
-                                "/api/customers/**"
-                        ).permitAll()
-                        .requestMatchers(
-                                "/api/time-logs/**"
-                        ).permitAll()
-                        .requestMatchers(
-                                "/api/part-usage/**"
-                        ).permitAll()
+                        // User Management - Only Manager
+                        .requestMatchers("/api/users/**").permitAll()
 
+                        // Customer APIs
+                        .requestMatchers("/api/customers/**")
+                        .permitAll()
+
+                        // Time Logs APIs
+                        .requestMatchers("/api/time-logs/**")
+                        .permitAll()
+
+                        // Part Usage APIs
+                        .requestMatchers("/api/part-usage/**")
+                        .permitAll()
+
+                        // All other APIs require authentication
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->

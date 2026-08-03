@@ -1,6 +1,6 @@
 package com.fsm.keystone.config;
 
-import com.fsm.keystone.repository.AppUserRepository;
+import com.fsm.keystone.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @RequiredArgsConstructor
 public class ApplicationConfig {
 
-    private final AppUserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Bean
     public UserDetailsService userDetailsService() {
