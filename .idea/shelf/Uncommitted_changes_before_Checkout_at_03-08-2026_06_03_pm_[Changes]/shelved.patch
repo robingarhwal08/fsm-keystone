@@ -1,0 +1,56 @@
+Index: frontend/node_modules/.vite/deps/_metadata.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\r\n  \"hash\": \"e1470a14\",\r\n  \"configHash\": \"62b547f4\",\r\n  \"lockfileHash\": \"a3e07c5a\",\r\n  \"browserHash\": \"0a0fc36f\",\r\n  \"optimized\": {\r\n    \"axios\": {\r\n      \"src\": \"../../axios/index.js\",\r\n      \"file\": \"axios.js\",\r\n      \"fileHash\": \"d8995c5e\",\r\n      \"needsInterop\": false\r\n    },\r\n    \"lucide-react\": {\r\n      \"src\": \"../../lucide-react/dist/esm/lucide-react.mjs\",\r\n      \"file\": \"lucide-react.js\",\r\n      \"fileHash\": \"c5eebee5\",\r\n      \"needsInterop\": false\r\n    },\r\n    \"react-dom/client\": {\r\n      \"src\": \"../../react-dom/client.js\",\r\n      \"file\": \"react-dom_client.js\",\r\n      \"fileHash\": \"de9dfecd\",\r\n      \"needsInterop\": true\r\n    },\r\n    \"react\": {\r\n      \"src\": \"../../react/index.js\",\r\n      \"file\": \"react.js\",\r\n      \"fileHash\": \"da93c24c\",\r\n      \"needsInterop\": true\r\n    },\r\n    \"react/jsx-dev-runtime\": {\r\n      \"src\": \"../../react/jsx-dev-runtime.js\",\r\n      \"file\": \"react_jsx-dev-runtime.js\",\r\n      \"fileHash\": \"1c1e11db\",\r\n      \"needsInterop\": true\r\n    }\r\n  },\r\n  \"chunks\": {\r\n    \"rolldown-runtime-EAsCxrDo\": {\r\n      \"file\": \"rolldown-runtime-EAsCxrDo.js\",\r\n      \"isDynamicEntry\": false\r\n    }\r\n  }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/frontend/node_modules/.vite/deps/_metadata.json b/frontend/node_modules/.vite/deps/_metadata.json
+--- a/frontend/node_modules/.vite/deps/_metadata.json	(revision d89ff1eb6c99ddab9cf46b9c1c30951c7ee8b705)
++++ b/frontend/node_modules/.vite/deps/_metadata.json	(date 1785760280234)
+@@ -1,37 +1,37 @@
+ {
+-  "hash": "e1470a14",
++  "hash": "a060ed35",
+   "configHash": "62b547f4",
+-  "lockfileHash": "a3e07c5a",
+-  "browserHash": "0a0fc36f",
++  "lockfileHash": "899099cd",
++  "browserHash": "2fe8c3bf",
+   "optimized": {
+     "axios": {
+       "src": "../../axios/index.js",
+       "file": "axios.js",
+-      "fileHash": "d8995c5e",
++      "fileHash": "ead73b24",
+       "needsInterop": false
+     },
+     "lucide-react": {
+       "src": "../../lucide-react/dist/esm/lucide-react.mjs",
+       "file": "lucide-react.js",
+-      "fileHash": "c5eebee5",
++      "fileHash": "f47665ef",
+       "needsInterop": false
+     },
+     "react-dom/client": {
+       "src": "../../react-dom/client.js",
+       "file": "react-dom_client.js",
+-      "fileHash": "de9dfecd",
++      "fileHash": "48983e31",
+       "needsInterop": true
+     },
+     "react": {
+       "src": "../../react/index.js",
+       "file": "react.js",
+-      "fileHash": "da93c24c",
++      "fileHash": "feb6d087",
+       "needsInterop": true
+     },
+     "react/jsx-dev-runtime": {
+       "src": "../../react/jsx-dev-runtime.js",
+       "file": "react_jsx-dev-runtime.js",
+-      "fileHash": "1c1e11db",
++      "fileHash": "6e7561b2",
+       "needsInterop": true
+     }
+   },
