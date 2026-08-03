@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { signup, getCustomers } from "../services/commonService";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function Signup({ onSignup, goLogin }) {
 
@@ -11,6 +12,8 @@ export default function Signup({ onSignup, goLogin }) {
     role: "MANAGER",
     customerId: ""
   });
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const [err, setErr] = useState("");
   const [customers, setCustomers] = useState([]);
@@ -76,14 +79,27 @@ export default function Signup({ onSignup, goLogin }) {
           })}
         />
 
-        <input
-          type="password"
-          placeholder="Password"
-          onChange={e => setForm({
-            ...form,
-            password: e.target.value
-          })}
-        />
+        <div className="password-field">
+          <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={form.password}
+              onChange={(e) =>
+                  setForm({
+                    ...form,
+                    password: e.target.value,
+                  })
+              }
+          />
+
+          <button
+              type="button"
+              className="eye-btn"
+              onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </button>
+        </div>
 
         <input
           placeholder="Phone"
@@ -118,7 +134,7 @@ export default function Signup({ onSignup, goLogin }) {
               }
             >
               <option value="">
-                Select Customer
+                SELECT CUSTOMER
               </option>
 
               {customers.map((c) => (

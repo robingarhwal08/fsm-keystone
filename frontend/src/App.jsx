@@ -19,6 +19,7 @@ import MyWorkOrders from "./pages/MyWorkOrders";
 import TimeLogs from "./pages/TimeLogs";
 import PartUsage from "./pages/PartUsage";
 
+import Users from "./pages/Users";
 export default function App() {
 
     const [page, setPage] = useState(
@@ -89,6 +90,9 @@ export default function App() {
                         user={user}
                     />
                 );
+
+            case "users":
+                return <Users />;
 
             case "timelogs":
                 return (

@@ -8,7 +8,8 @@ import {
   getWorkOrders,
   updateWorkOrderStatus,
   updateWorkOrder,
-  deleteWorkOrder
+  deleteWorkOrder,
+  assignTechnician
 } from "../services/commonService";
 
 import StatusBadge from "../components/StatusBadge";
@@ -212,6 +213,14 @@ export default function WorkOrders({ user }) {
 
     load();
   };
+  const changeTechnician = async (workOrderId, technicianId) => {
+
+    await assignTechnician(workOrderId, {
+      technicianId: Number(technicianId)
+    });
+
+    load();
+  };
 
   return (
     <div className="page">
@@ -381,9 +390,25 @@ export default function WorkOrders({ user }) {
                 <td>{w.title}</td>
 
                 <td>{w.customer?.name}</td>
-
                 <td>
-                  {w.assignedTechnician?.fullName || "-"}
+                  {(user?.role === "MANAGER" || user?.role === "DISPATCHER") ? (
+                      <select
+                          value={w.assignedTechnician?.id || ""}
+                          onChange={(e) =>
+                              changeTechnician(w.id, e.target.value)
+                          }
+                      >
+                        <option value="">Assign Technician</option>
+
+                        {techs.map((t) => (
+                            <option key={t.id} value={t.id}>
+                              {t.fullName}
+                            </option>
+                        ))}
+                      </select>
+                  ) : (
+                      w.assignedTechnician?.fullName || "-"
+                  )}
                 </td>
 
                 <td>
@@ -423,17 +448,17 @@ export default function WorkOrders({ user }) {
                 {user?.role === "MANAGER" && (
                   <td>
                     <button
-                      type="button"
-                      className="edit-btn"
-                      onClick={() => editWorkOrder(w)}
+                        type="button"
+                        className="action-btn edit-btn"
+                        onClick={() => editWorkOrder(w)}
                     >
                       Edit
                     </button>
 
                     <button
-                      type="button"
-                      className="delete-btn"
-                      onClick={() => removeWorkOrder(w.id)}
+                        type="button"
+                        className="action-btn delete-btn"
+                        onClick={() => removeWorkOrder(w.id)}
                     >
                       Delete
                     </button>
