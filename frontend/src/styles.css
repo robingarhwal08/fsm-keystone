@@ -562,40 +562,178 @@ th{
 .checkbox-row span {
     margin: 0;
 }
-/* RESPONSIVE */
+img{
+    max-width:100%;
+    height:auto;
+}
+.menu-btn{
+    display:none;
+    border:none;
+    background:none;
+    cursor:pointer;
+    padding:8px;
+}
 
-@media (max-width:1000px) {
+.overlay{
+    display:none;
+}
+/* MOBILE responsive */
 
-    .stats-grid {
-        grid-template-columns: repeat(2,1fr);
+@media (max-width:768px){
+    .sidebar{
+        width:220px;
+        transform:translateX(-100%);
+        transition:transform .3s ease;
+        z-index:1001;
     }
 
-    .grid-two,
-    .wo-form {
-        grid-template-columns:1fr;
+    .sidebar.open{
+        transform:translateX(0);
     }
 
-    .search {
-        display:none;
+    .main{
+        margin-left:0;
+        width:100%;
     }
 
-    .topbar {
-        flex-wrap:wrap;
-        height:auto;
+    .menu-btn{
+        display:block;
+    }
+
+    .overlay{
+        display:block;
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.4);
+        z-index:1000;
+    }
+    .sidebar{
+        width:220px;
+        transform:translateX(-100%);
+        transition:transform .3s ease;
+        z-index:1001;
+    }
+
+    .sidebar.open{
+        transform:translateX(0);
+    }
+
+    .main{
+        margin-left:0;
+        width:100%;
+    }
+
+    .menu-btn{
+        display:block;
+    }
+
+    .overlay{
+        display:block;
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.4);
+        z-index:1000;
+    }
+
+    .main{
+        margin-left:0;
+        width:100%;
+    }
+
+    .page{
         padding:15px;
     }
 
-    .page {
-        padding:20px;
+    .stats-grid{
+        grid-template-columns:1fr;
     }
 
-    .hero {
+    .grid-two,
+    .wo-form{
+        grid-template-columns:1fr;
+    }
+
+    .topbar{
+        flex-wrap:wrap;
+        height:auto;
+        padding:15px;
+        gap:12px;
+    }
+
+    .topbar h2{
+        font-size:20px;
+    }
+
+    .search{
+        display:none;
+    }
+
+    .live-pill{
+        display:none;
+    }
+
+    .hero{
         flex-direction:column;
         text-align:center;
+        padding:18px;
+        gap:15px;
     }
 
-    .watch {
+    .hero h1{
+        font-size:22px;
+    }
+
+    .watch{
+        width:100%;
         margin:auto;
+    }
+
+    .auth-card{
+        width:95%;
+        padding:20px;
+    }
+    .profile-menu{
+        position:fixed;
+        top:70px;
+        left:10px;
+        right:10px;
+        width:auto;
+        z-index:1200;
+    }
+
+    .topbar > div:first-child{
+        width:100%;
+    }.stat-card{
+         padding:18px;
+     }
+
+    .stat-card h2{
+        font-size:28px;
+    }.radio-box{
+         width:70px;
+         height:70px;
+         font-size:34px;
+     }.primary,
+      .action-btn,
+      .edit-btn,
+      .delete-btn,
+      .cancel-btn{
+          width:100%;
+          margin:5px 0;
+      }
+    th,
+    td{
+        padding:10px;
+        font-size:13px;
+    }
+    input,
+    select,
+    textarea{
+        font-size:14px;
+        padding:12px;
+    }
+    .panel{
+        padding:16px;
     }
 }
 

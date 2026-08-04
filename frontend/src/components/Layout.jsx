@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import {
   Grid2X2,
@@ -12,7 +12,9 @@ import {
   UserCog,
   FileText,
   Clock,
-  Wrench
+  Wrench,
+  Menu,
+  X
 } from "lucide-react";
 
 export default function Layout({
@@ -24,6 +26,29 @@ export default function Layout({
 }) {
 
   const [showMenu, setShowMenu] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const profileRef = useRef(null);
+
+  useEffect(() => {
+
+    function handleClickOutside(event) {
+
+      if (
+          profileRef.current &&
+          !profileRef.current.contains(event.target)
+      ) {
+        setShowMenu(false);
+      }
+
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+
+  }, []);
 
   const role = user?.role;
 
@@ -78,7 +103,7 @@ export default function Layout({
 
       {/* Sidebar */}
 
-      <aside className="sidebar">
+      <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
 
         <div className="brand">
           <span className="brand-mark">FSM</span>
@@ -91,7 +116,10 @@ export default function Layout({
           nav.map(([id, label, Icon]) => (
             <button
               key={id}
-              onClick={() => setPage(id)}
+              onClick={() => {
+                setPage(id);
+                setSidebarOpen(false);
+              }}
               className={page === id ? "active" : ""}
             >
               <Icon size={22} />
@@ -101,7 +129,10 @@ export default function Layout({
         }
 
         <button
-          onClick={logout}
+            onClick={()=>{
+              logout();
+              setSidebarOpen(false);
+            }}
           className="logout"
         >
           <LogOut size={22} />
@@ -109,12 +140,31 @@ export default function Layout({
         </button>
 
       </aside>
+      {sidebarOpen && (
+          <div
+              className="overlay"
+              onClick={() => {
+                setSidebarOpen(!sidebarOpen);
+                setShowMenu(false);
+              }}
+          />
+      )}
 
       {/* Main */}
 
       <main className="main">
 
         <header className="topbar">
+          <button
+              className="menu-btn"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            {
+              sidebarOpen
+                  ? <X size={24}/>
+                  : <Menu size={24}/>
+            }
+          </button>
 
           <div>
             <h2>Field Service Management System</h2>
@@ -136,7 +186,10 @@ export default function Layout({
 
           {/* Profile Section */}
 
-          <div className="avatar-container">
+          <div
+              className="avatar-container"
+              ref={profileRef}
+          >
 
             <div
               className="avatar"
@@ -167,7 +220,11 @@ export default function Layout({
                   </div>
 
                   <button
-                    onClick={logout}
+                      onClick={() => {
+                        logout();
+                        setSidebarOpen(false);
+                        setShowMenu(false);
+                      }}
                   >
                     Sign Out
                   </button>
