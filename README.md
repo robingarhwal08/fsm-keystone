@@ -2,6 +2,11 @@
 
 A full-stack **Field Service Management System** developed by Robin.
 
+
+The objective of the Field Service Management (FSM) project is to build a centralized platform that helps organizations manage field service operations efficiently. It allows customers to create service requests, dispatchers to assign work orders, technicians to update job progress, and managers to monitor performance and Service Level Agreements (SLAs). The system improves communication, reduces manual work, tracks service activities in real time, and increases overall operational efficiency.
+
+
+## Project Demo Link :  https://www.youtube.com/live/G3ixhgYTLrM?si=prSdeHZMieKxUim4
 ## Technology Stack
 
 ### Backend
