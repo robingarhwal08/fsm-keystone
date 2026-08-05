@@ -7,6 +7,9 @@ The objective of the Field Service Management (FSM) project is to build a centra
 
 
 ## Project Demo Link :  https://www.youtube.com/live/G3ixhgYTLrM?si=prSdeHZMieKxUim4
+
+## Project Deployed at (Live Now) : https://fsm-keystone-bf2v.vercel.app/
+
 ## Technology Stack
 
 ### Backend
