@@ -14,18 +14,19 @@ The objective of the Field Service Management (FSM) project is to build a centra
 
 ### Backend
 
-* Spring Boot 3
+* Spring Boot 4.0.7
 * Java 21
-* Spring Security with JWT Authentication
-* Hibernate 
-* Validation
-* PostgreSQL
-* Spring Data JPA
+* Spring Security with JWT Authentication (jjwt 0.12.6)
+* Hibernate / Spring Data JPA
+* Bean Validation
+* PostgreSQL 16
+* Flyway 10 (schema migrations)
 
 ### Frontend
 
-* React
-* Vite
+* React 19.2.7 (pinned)
+* Vite 8.1.5 (pinned)
+* axios 1.18.1 (pinned)
 
 ---
 
@@ -217,15 +218,16 @@ The application implements **Role-Based Access Control (RBAC)** using JWT authen
 
 # Tech Stack Summary
 
-| Component      | Technology      |
-| -------------- | --------------- |
-| Frontend       | React + Vite    |
-| Backend        | Spring Boot 3   |
-| Language       | Java 21         |
-| Authentication | JWT             |
-| Database       | PostgreSQL      |
-| ORM            | Spring Data JPA |
-| Build Tool     | Maven           |
+| Component      | Technology                        |
+| -------------- | --------------------------------- |
+| Frontend       | React 19.2.7 + Vite 8.1.5        |
+| Backend        | Spring Boot 4.0.7                 |
+| Language       | Java 21                           |
+| Authentication | JWT (jjwt 0.12.6, HMAC-SHA)       |
+| Database       | PostgreSQL 16                     |
+| Migrations     | Flyway 10                         |
+| ORM            | Spring Data JPA / Hibernate       |
+| Build Tool     | Maven (wrapper included)          |
 
 ---
 
@@ -235,3 +237,20 @@ The application implements **Role-Based Access Control (RBAC)** using JWT authen
 * Set credentials via `.env` (copy `.env.example` and fill in values, or run `bash scripts/dev/bootstrap-secrets.sh`). Never edit credentials directly in `application.properties`.
 * Start the backend before launching the frontend.
 * Different user roles have different permissions and access levels throughout the application.
+
+---
+
+# Documentation
+
+Authoritative references for architecture decisions, operations runbooks, and environment setup:
+
+| Resource | Description |
+|----------|-------------|
+| [docs/adr/README.md](docs/adr/README.md) | Architecture Decision Records — why the system is built the way it is |
+| [docs/runbooks/secret-rotation.md](docs/runbooks/secret-rotation.md) | JWT key and database password rotation procedure |
+| [docs/baseline/required-properties.md](docs/baseline/required-properties.md) | Required environment variables manifest |
+| [docs/testing.md](docs/testing.md) | Test categories, run commands, and coverage policy |
+| [keystone-backend/README.md](keystone-backend/README.md) | Backend prerequisites and local run instructions |
+| [frontend/README.md](frontend/README.md) | Frontend prerequisites, dependency pinning, and build instructions |
+
+> Run `bash scripts/ci/check-docs-links.sh` to validate all relative documentation links.

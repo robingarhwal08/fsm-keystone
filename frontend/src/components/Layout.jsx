@@ -63,7 +63,7 @@ export default function Layout({
       ["workorders", "Work Orders", ClipboardList],
       ["parts", "Inventory", Package],
       ["users", "Users", UserCog],
-//       ["reports", "Reports", FileText]
+      // ["reports", "Reports", FileText]  — planned feature; App.jsx case "reports" exists but page not yet implemented
     ];
   }
 
@@ -71,7 +71,7 @@ export default function Layout({
   else if (role === "DISPATCHER") {
     nav = [
       ["dashboard", "Dashboard", Grid2X2],
-//       ["customers", "Customers", Users],
+      // ["customers", "Customers", Users]  — planned feature; dispatcher customer visibility not yet scoped
       ["sites", "Sites", MapPin],
       ["workorders", "Work Orders", ClipboardList]
     ];
@@ -92,9 +92,11 @@ export default function Layout({
     nav = [
       ["dashboard", "Dashboard", Grid2X2],
       ["requests", "Create Request", ClipboardList],
-      ["myrequests", "My Requests", ClipboardList]
-//       ["mysites", "My Sites", MapPin],
-//       ["reports", "Reports", FileText]
+      // KNOWN DEFECT: "myrequests" has no matching case in App.jsx switch (which uses "requests").
+      // Clicking this nav item renders nothing. Fix tracked in the frontend routing work order.
+      ["myrequests", "My Requests", ClipboardList],
+      // ["mysites", "My Sites", MapPin],    — planned feature; not yet routed in App.jsx
+      // ["reports", "Reports", FileText]    — planned feature; CustomerReports.jsx exists but not yet linked
     ];
   }
 

@@ -8,23 +8,31 @@
 		<version>4.0.7</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.fsm.</groupId>
+	<groupId>com.fsm</groupId>
 	<artifactId>keystone</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
-	<url/>
+	<name>FSM Keystone</name>
+	<description>Field Service Management backend API — Spring Boot 4, Java 21, PostgreSQL 16</description>
+	<url>https://github.com/robingarhwal08/fsm-keystone</url>
 	<licenses>
-		<license/>
+		<license>
+			<name>MIT License</name>
+			<url>https://opensource.org/licenses/MIT</url>
+			<distribution>repo</distribution>
+		</license>
 	</licenses>
 	<developers>
-		<developer/>
+		<developer>
+			<id>robingarhwal08</id>
+			<name>Robin</name>
+			<url>https://github.com/robingarhwal08</url>
+		</developer>
 	</developers>
 	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
+		<connection>scm:git:https://github.com/robingarhwal08/fsm-keystone.git</connection>
+		<developerConnection>scm:git:git@github.com:robingarhwal08/fsm-keystone.git</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/robingarhwal08/fsm-keystone</url>
 	</scm>
 	<properties>
 		<java.version>21</java.version>

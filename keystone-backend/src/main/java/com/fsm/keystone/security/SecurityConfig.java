@@ -42,7 +42,9 @@ public class SecurityConfig {
                         // Public APIs
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        // User Management - Only Manager
+                        // User Management — currently permitAll (filter-chain gap).
+                        // Role enforcement is handled per-method via @PreAuthorize on UserController.
+                        // Removing this permitAll is tracked in the authorization remediation epic; see ADR-0001.
                         .requestMatchers("/api/users/**").permitAll()
 
                         // Customer APIs
