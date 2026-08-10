@@ -21,9 +21,14 @@ This directory contains all architecture, operations, and baseline documentation
 
 | Resource | Description |
 |----------|-------------|
-| [runbooks/secret-rotation.md](runbooks/secret-rotation.md) | JWT key and database password rotation procedure |
-| [runbooks/dependency-baseline.md](runbooks/dependency-baseline.md) | Dependency baseline and SBOM regeneration |
-| [runbooks/schema-snapshot.md](runbooks/schema-snapshot.md) | PostgreSQL schema snapshot and drift detection |
+| [runbooks/README.md](runbooks/README.md) | Runbook index with trigger conditions |
+| [runbooks/deploy-and-rollback.md](runbooks/deploy-and-rollback.md) | Full promotion path, Flyway pre-deploy step, and rollback decision tree |
+| [runbooks/migration-failure.md](runbooks/migration-failure.md) | Flyway failure diagnosis, fix-forward policy, expand-then-contract sequence |
+| [runbooks/authorization-regression.md](runbooks/authorization-regression.md) | 401/403 triage map for default-deny and tenancy-scoping regressions |
+| [runbooks/database-backup-restore.md](runbooks/database-backup-restore.md) | pg_dump/restore procedure, restore-verification drill |
+| [runbooks/health-and-observability.md](runbooks/health-and-observability.md) | Container health, request tracing, alert-to-log-line walkthrough |
+| [runbooks/rehearsals.md](runbooks/rehearsals.md) | Rehearsal records for each runbook |
+| [operations/slo.md](operations/slo.md) | SLIs, SLO targets, error budgets, and alert conditions |
 
 ## Baseline Inventory
 
