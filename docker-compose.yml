@@ -1,27 +1,31 @@
-version: "3.9"
+# Compose V2 — no top-level 'version' key (obsolete per Compose Spec).
+#
+# FIRST RUN: generate .env and ./secrets/ with the bootstrap script:
+#   bash scripts/dev/bootstrap-secrets.sh
+#
+# Then: docker compose up
+#
+# All credentials come from .env (interpolated) and ./secrets/ (file-based).
+# .env is git-ignored; never commit real values. See .env.example.
 
 services:
 
   postgres:
     image: postgres:16
-
     container_name: postgres-db
-
     restart: always
-
     environment:
-      POSTGRES_DB: fsmdb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: robin8181
-
+      POSTGRES_DB: ${POSTGRES_DB:-fsmdb}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      # Required: must be set in .env — fails loudly if absent
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env — run scripts/dev/bootstrap-secrets.sh}
     ports:
-      - "5432:5432"
-
+      # Bound to loopback only; the backend reaches postgres over the compose bridge network.
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
-
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 10s
       retries: 5
       timeout: 5s
@@ -29,40 +33,48 @@ services:
   backend:
     build:
       context: ./keystone-backend
-
     container_name: springboot-app
-
     depends_on:
       postgres:
         condition: service_healthy
-
     ports:
       - "8080:8080"
-
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/fsmdb
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: robin8181
-
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-
-      APP_CORS_ALLOWED_ORIGIN: http://localhost:3000
-
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://postgres:5432/fsmdb}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-postgres}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:-update}
+      APP_CORS_ALLOWED_ORIGIN: ${APP_CORS_ALLOWED_ORIGIN:-http://localhost:3000}
+      APP_JWT_EXPIRATION_MS: ${APP_JWT_EXPIRATION_MS:-86400000}
+      # Env-var fallback for CI / environments that do not use file-based secrets.
+      # When the compose secrets files are mounted, Spring's configtree takes precedence.
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-}
+      APP_JWT_SECRET: ${APP_JWT_SECRET:-}
+      # Tell Spring Boot to read /run/secrets/ as a config tree (optional so it never
+      # breaks startup when the directory is absent — env vars are used instead).
+      SPRING_CONFIG_IMPORT: "optional:configtree:/run/secrets/"
+    secrets:
+      - spring.datasource.password
+      - app.jwt.secret
     restart: always
 
   frontend:
     build:
       context: ./frontend
-
     container_name: react-app
-
     depends_on:
       - backend
-
     ports:
       - "3000:80"
-
     restart: always
 
 volumes:
   postgres-data:
+
+# File-based secrets mounted at /run/secrets/<name> inside the backend container.
+# Spring Boot configtree reads these as properties (e.g. spring.datasource.password).
+# Generate the files with: bash scripts/dev/bootstrap-secrets.sh
+secrets:
+  spring.datasource.password:
+    file: ./secrets/spring.datasource.password
+  app.jwt.secret:
+    file: ./secrets/app.jwt.secret

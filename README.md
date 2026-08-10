@@ -43,20 +43,40 @@ The objective of the Field Service Management (FSM) project is to build a centra
 
 ---
 
-## Step 1: Create the PostgreSQL Database
+## Step 1: Generate Local Secrets
 
-Run the following SQL command:
+The application requires a JWT signing key and database password.
+**Never edit `application.properties` or commit real passwords.**
+Use the bootstrap script to generate a git-ignored `.env` and `secrets/` directory:
+
+```bash
+bash scripts/dev/bootstrap-secrets.sh
+```
+
+This generates:
+- `.env` — environment variables (copied from `.env.example` with random secrets filled in)
+- `secrets/spring.datasource.password` — database password (mounted into the backend container)
+- `secrets/app.jwt.secret` — JWT signing key (mounted into the backend container)
+
+For Windows developers without bash, see the PowerShell equivalent at the bottom of
+`scripts/dev/bootstrap-secrets.sh`, or set the variables manually in `.env`.
+
+---
+
+## Step 2: Create the PostgreSQL Database (non-Docker only)
+
+If running without Docker Compose, create the database manually:
 
 ```sql
 CREATE DATABASE fsmdb;
 ```
 
-Supply database credentials via environment variables (see `.env.example`).
-**Do not edit `application.properties` with real passwords** — use the `.env` file instead.
+When using Docker Compose (`docker compose up`), PostgreSQL is created automatically
+using the credentials in `.env`.
 
 ---
 
-## Step 2: Start the Backend
+## Step 3: Start the Backend
 
 Navigate to the backend directory:
 
@@ -86,7 +106,7 @@ The backend will start on the configured server port (default: **8080**).
 
 ---
 
-## Step 3: Start the Frontend
+## Step 4: Start the Frontend
 
 Navigate to the frontend directory:
 
@@ -212,6 +232,6 @@ The application implements **Role-Based Access Control (RBAC)** using JWT authen
 # Notes
 
 * Ensure PostgreSQL is running before starting the backend.
-* Update the database credentials in `application.properties` if required.
+* Set credentials via `.env` (copy `.env.example` and fill in values, or run `bash scripts/dev/bootstrap-secrets.sh`). Never edit credentials directly in `application.properties`.
 * Start the backend before launching the frontend.
 * Different user roles have different permissions and access levels throughout the application.
