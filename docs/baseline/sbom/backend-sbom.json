@@ -1,0 +1,256 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.4",
+  "version": 1,
+  "serialNumber": "urn:uuid:fsm-keystone-backend-2026-08-10",
+  "metadata": {
+    "timestamp": "2026-08-10T00:00:00Z",
+    "tools": [
+      {
+        "name": "pom-analysis",
+        "version": "1.0",
+        "vendor": "fsm-keystone-baseline"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "name": "fsm-keystone-backend",
+      "version": "0.0.1-SNAPSHOT",
+      "description": "FSM Keystone Spring Boot backend"
+    },
+    "properties": [
+      {
+        "name": "generation-method",
+        "value": "constructed-from-pom.xml-analysis"
+      },
+      {
+        "name": "generation-note",
+        "value": "Regenerate with: cd keystone-backend && mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom -DoutputName=../docs/baseline/sbom/backend-sbom"
+      },
+      {
+        "name": "spring-boot-version",
+        "value": "4.0.7"
+      },
+      {
+        "name": "java-version",
+        "value": "21"
+      },
+      {
+        "name": "sbom-note",
+        "value": "Direct deps only; run mvn dependency:tree for full transitive tree"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "group": "org.springframework.boot",
+      "name": "spring-boot-starter-data-jpa",
+      "version": "4.0.7",
+      "purl": "pkg:maven/org.springframework.boot/spring-boot-starter-data-jpa@4.0.7",
+      "scope": "compile",
+      "properties": [
+        {
+          "name": "version-management",
+          "value": "spring-boot-starter-parent:4.0.7"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "group": "org.springframework.boot",
+      "name": "spring-boot-starter-security",
+      "version": "4.0.7",
+      "purl": "pkg:maven/org.springframework.boot/spring-boot-starter-security@4.0.7",
+      "scope": "compile",
+      "properties": [
+        {
+          "name": "version-management",
+          "value": "spring-boot-starter-parent:4.0.7"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "group": "org.springframework.boot",
+      "name": "spring-boot-starter-validation",
+      "version": "4.0.7",
+      "purl": "pkg:maven/org.springframework.boot/spring-boot-starter-validation@4.0.7",
+      "scope": "compile",
+      "properties": [
+        {
+          "name": "version-management",
+          "value": "spring-boot-starter-parent:4.0.7"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "group": "org.springframework.boot",
+      "name": "spring-boot-starter-webmvc",
+      "version": "4.0.7",
+      "purl": "pkg:maven/org.springframework.boot/spring-boot-starter-webmvc@4.0.7",
+      "scope": "compile",
+      "properties": [
+        {
+          "name": "version-management",
+          "value": "spring-boot-starter-parent:4.0.7"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "group": "org.postgresql",
+      "name": "postgresql",
+      "version": "managed-by-spring-boot-4.0.7",
+      "purl": "pkg:maven/org.postgresql/postgresql@managed-by-spring-boot-4.0.7",
+      "scope": "runtime",
+      "properties": [
+        {
+          "name": "version-management",
+          "value": "spring-boot-starter-parent:4.0.7"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "group": "org.projectlombok",
+      "name": "lombok",
+      "version": "managed-by-spring-boot-4.0.7",
+      "purl": "pkg:maven/org.projectlombok/lombok@managed-by-spring-boot-4.0.7",
+      "scope": "compile",
+      "properties": [
+        {
+          "name": "version-management",
+          "value": "spring-boot-starter-parent:4.0.7"
+        },
+        {
+          "name": "optional",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "group": "io.jsonwebtoken",
+      "name": "jjwt-api",
+      "version": "0.12.6",
+      "purl": "pkg:maven/io.jsonwebtoken/jjwt-api@0.12.6",
+      "scope": "compile"
+    },
+    {
+      "type": "library",
+      "group": "io.jsonwebtoken",
+      "name": "jjwt-impl",
+      "version": "0.12.6",
+      "purl": "pkg:maven/io.jsonwebtoken/jjwt-impl@0.12.6",
+      "scope": "runtime"
+    },
+    {
+      "type": "library",
+      "group": "io.jsonwebtoken",
+      "name": "jjwt-jackson",
+      "version": "0.12.6",
+      "purl": "pkg:maven/io.jsonwebtoken/jjwt-jackson@0.12.6",
+      "scope": "runtime"
+    },
+    {
+      "type": "library",
+      "group": "org.springframework.boot",
+      "name": "spring-boot-starter-data-jpa-test",
+      "version": "4.0.7",
+      "purl": "pkg:maven/org.springframework.boot/spring-boot-starter-data-jpa-test@4.0.7",
+      "scope": "test",
+      "properties": [
+        {
+          "name": "version-management",
+          "value": "spring-boot-starter-parent:4.0.7"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "group": "org.springframework.boot",
+      "name": "spring-boot-starter-security-test",
+      "version": "4.0.7",
+      "purl": "pkg:maven/org.springframework.boot/spring-boot-starter-security-test@4.0.7",
+      "scope": "test",
+      "properties": [
+        {
+          "name": "version-management",
+          "value": "spring-boot-starter-parent:4.0.7"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "group": "org.springframework.boot",
+      "name": "spring-boot-starter-validation-test",
+      "version": "4.0.7",
+      "purl": "pkg:maven/org.springframework.boot/spring-boot-starter-validation-test@4.0.7",
+      "scope": "test",
+      "properties": [
+        {
+          "name": "version-management",
+          "value": "spring-boot-starter-parent:4.0.7"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "group": "org.springframework.boot",
+      "name": "spring-boot-starter-webmvc-test",
+      "version": "4.0.7",
+      "purl": "pkg:maven/org.springframework.boot/spring-boot-starter-webmvc-test@4.0.7",
+      "scope": "test",
+      "properties": [
+        {
+          "name": "version-management",
+          "value": "spring-boot-starter-parent:4.0.7"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "group": "org.springframework.boot",
+      "name": "spring-boot-testcontainers",
+      "version": "4.0.7",
+      "purl": "pkg:maven/org.springframework.boot/spring-boot-testcontainers@4.0.7",
+      "scope": "test",
+      "properties": [
+        {
+          "name": "version-management",
+          "value": "spring-boot-starter-parent:4.0.7"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "group": "org.testcontainers",
+      "name": "postgresql",
+      "version": "managed-by-spring-boot-4.0.7",
+      "purl": "pkg:maven/org.testcontainers/postgresql@managed-by-spring-boot-4.0.7",
+      "scope": "test",
+      "properties": [
+        {
+          "name": "version-management",
+          "value": "spring-boot-starter-parent:4.0.7"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "group": "org.testcontainers",
+      "name": "junit-jupiter",
+      "version": "managed-by-spring-boot-4.0.7",
+      "purl": "pkg:maven/org.testcontainers/junit-jupiter@managed-by-spring-boot-4.0.7",
+      "scope": "test",
+      "properties": [
+        {
+          "name": "version-management",
+          "value": "spring-boot-starter-parent:4.0.7"
+        }
+      ]
+    }
+  ]
+}

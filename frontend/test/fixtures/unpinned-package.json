@@ -1,0 +1,15 @@
+{
+  "name": "fixture-unpinned",
+  "version": "1.0.0",
+  "description": "Synthetic fixture for check-unpinned-deps test — contains unbounded specifiers.",
+  "dependencies": {
+    "some-library": "latest",
+    "another-library": "*",
+    "pinned-library": "^2.3.4",
+    "also-pinned": "~1.0.0"
+  },
+  "devDependencies": {
+    "dev-tool": "latest",
+    "pinned-dev-tool": "3.1.0"
+  }
+}

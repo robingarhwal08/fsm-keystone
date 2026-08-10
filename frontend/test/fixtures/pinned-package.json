@@ -1,0 +1,14 @@
+{
+  "name": "fixture-pinned",
+  "version": "1.0.0",
+  "description": "Synthetic fixture for check-unpinned-deps test — all specifiers pinned.",
+  "dependencies": {
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "vite": "8.1.5",
+    "@vitejs/plugin-react": "6.0.3",
+    "axios": "1.18.1",
+    "lucide-react": "1.25.0",
+    "react-icons": "^5.7.0"
+  }
+}
