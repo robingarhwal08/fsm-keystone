@@ -1,0 +1,47 @@
+# Gitleaks configuration for fsm-keystone
+# Run: gitleaks detect --config=.gitleaks.toml --source=. --report-format=json
+# See docs/baseline/secrets-inventory.md for the current finding baseline.
+
+title = "fsm-keystone secret scan"
+
+[[rules]]
+id          = "jwt-hex64-signing-key"
+description = "64-character hex string that matches the JWT signing key pattern"
+regex       = '''(?i)(jwt[._-]?secret|app[._-]?jwt[._-]?secret)\s*[=:]\s*\$\{[^}]+:[0-9a-f]{64}\}'''
+tags        = ["secret", "jwt", "high"]
+
+[[rules]]
+id          = "hex64-literal"
+description = "Bare 64-character lowercase hex string (signing key committed in plain text)"
+regex       = '''(?<![0-9a-f])[0-9a-f]{64}(?![0-9a-f])'''
+tags        = ["secret", "jwt", "high"]
+
+[[rules]]
+id          = "postgres-password-assignment"
+description = "POSTGRES_PASSWORD or SPRING_DATASOURCE_PASSWORD with an inline literal value"
+regex       = '''(?i)(POSTGRES_PASSWORD|SPRING_DATASOURCE_PASSWORD)\s*[:=]\s*(?!\$\{)[^\s#\$][^\s#]*'''
+tags        = ["secret", "database", "high"]
+
+[[rules]]
+id          = "jdbc-inline-credential"
+description = "datasource.password property with a literal fallback value"
+regex       = '''spring\.datasource\.password\s*=\s*\$\{[^}]+:[^}]+\}'''
+tags        = ["secret", "database", "medium"]
+
+# ─── Allow-list paths ────────────────────────────────────────────────────────
+# Narrow per-rule suppressions only. Never use blanket path suppressions.
+
+[allowlist]
+description = "Suppress known-safe locations"
+paths = [
+  # Test fixtures contain placeholder values only, never real secrets
+  '''keystone-backend/src/test/resources/guard/''',
+  # This gitleaks configuration itself (rule regex strings match the patterns)
+  '''\.gitleaks\.toml$''',
+  # Documentation that quotes the pattern format, not actual values
+  '''docs/baseline/secrets-inventory\.md$''',
+  '''docs/runbooks/secret-rotation\.md$''',
+  # Lockfile checksums may contain long hex strings
+  '''package-lock\.json$''',
+  '''yarn\.lock$''',
+]

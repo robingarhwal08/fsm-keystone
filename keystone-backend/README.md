@@ -14,7 +14,9 @@ CREATE DATABASE fsmdb;
 ```sql
 show databases;
 ```
-Update `src/main/resources/application.properties` if your PostgreSQL username/password is different.
+Supply credentials via environment variables — **do not edit `application.properties` with real values**.
+Copy `../.env.example` to `../.env` and fill in `SPRING_DATASOURCE_PASSWORD` and `APP_JWT_SECRET`.
+See [`../docs/baseline/required-properties.md`](../docs/baseline/required-properties.md) for the full manifest.
 
 ## Run
 ```bash

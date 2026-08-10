@@ -9,9 +9,11 @@ frontend/dist/
 # Backend
 keystone-backend/target/
 
-# Environment files
+# Environment files — .env.example is tracked as a placeholder template
 .env
 .env.*
+!.env.example
+frontend/.env
 
 # Logs
 *.log

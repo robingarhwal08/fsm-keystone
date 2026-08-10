@@ -31,6 +31,18 @@ The objective of the Field Service Management (FSM) project is to build a centra
 
 # Project Setup
 
+## Security Notice
+
+> **Important:** The default configuration files contain placeholder credentials that were
+> historically committed to this repository and are now considered compromised.
+> **Never use the default values in any environment** — always supply secrets via environment
+> variables. See:
+> - [`docs/baseline/required-properties.md`](docs/baseline/required-properties.md) — required env variable manifest
+> - [`docs/runbooks/secret-rotation.md`](docs/runbooks/secret-rotation.md) — rotation procedure
+> - [`.env.example`](.env.example) — environment variable template (copy to `.env` and fill in real values)
+
+---
+
 ## Step 1: Create the PostgreSQL Database
 
 Run the following SQL command:
@@ -39,11 +51,8 @@ Run the following SQL command:
 CREATE DATABASE fsmdb;
 ```
 
-If your PostgreSQL username or password is different from `postgres/postgres`, update the database configuration in:
-
-```
-keystone-backend/src/main/resources/application.properties
-```
+Supply database credentials via environment variables (see `.env.example`).
+**Do not edit `application.properties` with real passwords** — use the `.env` file instead.
 
 ---
 
