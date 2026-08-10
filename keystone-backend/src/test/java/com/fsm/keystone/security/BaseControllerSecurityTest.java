@@ -3,6 +3,7 @@ package com.fsm.keystone.security;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
+import org.junit.jupiter.api.Tag;
 import org.mockito.Answers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -32,6 +33,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
  * {@code @BeforeEach} method (or override it), and must declare their own
  * service {@link MockBean}s since they differ per controller.</p>
  */
+@Tag("slice")
 public abstract class BaseControllerSecurityTest {
 
     /** Path variable placeholder replacement map used to resolve path templates. */

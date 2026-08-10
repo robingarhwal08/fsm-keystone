@@ -7,7 +7,7 @@ COPY pom.xml .
 
 COPY src ./src
 
-RUN mvn clean package -DskipTests
+RUN mvn -B clean package -DskipITs=true
 
 
 # Runtime Stage
