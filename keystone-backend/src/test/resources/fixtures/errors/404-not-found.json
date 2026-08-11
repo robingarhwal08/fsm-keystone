@@ -1,0 +1,8 @@
+{
+  "_comment": "Expected shape for ResourceNotFoundException → 404. Dynamic fields (timestamp, correlationId) are asserted structurally in tests.",
+  "status": 404,
+  "code": "WORK_ORDER_NOT_FOUND",
+  "message": "Work order not found with id: 42",
+  "path": "/test/errors/not-found",
+  "fieldErrors": []
+}

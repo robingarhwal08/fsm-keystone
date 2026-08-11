@@ -1,0 +1,6 @@
+{
+  "_comment": "Expected shape for HttpRequestMethodNotSupportedException → 405.",
+  "status": 405,
+  "code": "METHOD_NOT_ALLOWED",
+  "fieldErrors": []
+}

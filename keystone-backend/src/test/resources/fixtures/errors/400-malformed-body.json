@@ -1,0 +1,7 @@
+{
+  "_comment": "Expected shape for HttpMessageNotReadableException → 400. Message is always the generic sanitised value.",
+  "status": 400,
+  "code": "INVALID_REQUEST_DATA",
+  "message": "Malformed request body",
+  "fieldErrors": []
+}

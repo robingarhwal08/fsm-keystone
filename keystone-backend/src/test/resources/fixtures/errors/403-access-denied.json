@@ -1,0 +1,7 @@
+{
+  "_comment": "Expected shape for authenticated-but-insufficient-role access → 403 (AccessDeniedHandler or AccessDeniedException handler).",
+  "status": 403,
+  "code": "ACCESS_DENIED",
+  "message": "You do not have permission to perform this action",
+  "fieldErrors": []
+}

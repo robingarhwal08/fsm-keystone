@@ -1,0 +1,8 @@
+{
+  "_comment": "Expected shape for unexpected Exception → 500. Body must never contain class names, SQL, stack traces or environment values.",
+  "status": 500,
+  "code": "INTERNAL_ERROR",
+  "message": "An unexpected error occurred",
+  "fieldErrors": [],
+  "_forbidden_substrings": ["com.fsm", "Exception", "at java", "select ", "insert ", "update "]
+}

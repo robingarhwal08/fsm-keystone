@@ -1,0 +1,7 @@
+{
+  "_comment": "Expected shape for BusinessRuleException or DataIntegrityViolationException → 409.",
+  "status": 409,
+  "code": "INSUFFICIENT_STOCK",
+  "message": "Insufficient stock for part with id: 3",
+  "fieldErrors": []
+}

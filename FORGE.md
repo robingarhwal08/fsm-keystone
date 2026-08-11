@@ -112,3 +112,10 @@
 - **Files:** 21 (+1737/-1)
 - **Duration:** 729ss
 - **Approach:** N/A
+
+## WO-013: User Story: WO-013 - Global exception handler with uniform error contract
+- **Status:** completed
+- **Commit:** `73a77f3`
+- **Files:** 16 (+1074/-1)
+- **Duration:** 986ss
+- **Approach:** N/A

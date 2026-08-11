@@ -1,0 +1,11 @@
+{
+  "_comment": "Expected shape for MethodArgumentNotValidException → 400 with field errors.",
+  "status": 400,
+  "code": "INVALID_REQUEST_DATA",
+  "message": "Validation failed",
+  "path": "/test/errors/validate",
+  "fieldErrors": [
+    { "field": "fullName", "message": "must not be blank" },
+    { "field": "email", "message": "must not be blank" }
+  ]
+}

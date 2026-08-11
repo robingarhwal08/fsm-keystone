@@ -1,0 +1,7 @@
+{
+  "_comment": "Expected shape for DataIntegrityViolationException → 409. SQL constraint detail is never included in message.",
+  "status": 409,
+  "code": "DATA_INTEGRITY_VIOLATION",
+  "message": "The request conflicts with an existing resource",
+  "fieldErrors": []
+}

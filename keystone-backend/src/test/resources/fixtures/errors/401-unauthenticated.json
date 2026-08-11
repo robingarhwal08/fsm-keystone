@@ -1,0 +1,7 @@
+{
+  "_comment": "Expected shape for unauthenticated access → 401 (AuthenticationEntryPoint or AuthenticationException handler).",
+  "status": 401,
+  "code": "AUTHENTICATION_FAILED",
+  "message": "Authentication is required to access this resource",
+  "fieldErrors": []
+}
