@@ -44,57 +44,85 @@ The dual-key window allows the application to:
 - **Sign** all new tokens with `NEW_JWT_KEY`.
 - **Verify** tokens still signed with the old key for a configurable window (e.g., 30 minutes).
 
-**Current status:** The application does not yet support dual-key verification (Phase 2 target).
-Until that feature lands, rotation causes an immediate forced relogin for all active users.
+**Current status:** Dual-key verification window is **live** (implemented in WO-020).
+New tokens are always signed with the current key and carry a `kid` header.
+Old tokens (signed with the previous key, with or without a `kid` header) remain valid
+while `APP_JWT_PREVIOUS_SECRET` is set. Remove it once the fallback counter drains to zero.
 
-**Forced-relogin communication:** Before rotating, notify users via your communication channel
-(email, in-app banner, support ticket) that all sessions will be invalidated at `<rotation-time>`.
-State the reason as a "scheduled security key rotation" without disclosing technical details.
+### Step 3 — Open the Rotation Window
 
-### Step 3 — Inject the New Key
-
-Update your `.env` file (git-ignored):
+Set both the new current key **and** the old key as previous-secret, then restart:
 
 ```bash
 # .env (git-ignored — NEVER commit this file)
-APP_JWT_SECRET=<output-of-openssl-rand-hex-32>
+APP_JWT_SECRET=<output-of-openssl-rand-hex-32>         # new signing key
+APP_JWT_PREVIOUS_SECRET=<old-value-of-APP_JWT_SECRET>  # old key kept for verification
 ```
-
-Then restart the backend:
 
 ```bash
 docker compose up -d --no-deps backend
 ```
 
-### Step 4 — Post-Rotation Verification
+All new tokens will be signed with `APP_JWT_SECRET`. Tokens signed with the old key
+(still held by active sessions) continue to verify during this window.
+
+### Step 4 — Monitor the Drain
+
+Monitor the `jwt.verification.fallback` counter in Prometheus/Grafana until it flatlines
+at zero. This indicates all pre-rotation sessions have either been re-authenticated or
+expired.
+
+```promql
+# Rate of fallback verifications (old-key tokens still in use)
+rate(jwt_verification_fallback_total[5m])
+```
+
+A `WARN` log line is emitted for every fallback verification:
+```
+JWT verified via previous key — subject=<email> keyId=<8-char-hex>
+```
+
+Once the counter has been zero for longer than `app.jwt.expiration-ms` (default 24 h):
+
+```bash
+# .env — remove previous-secret to close the window
+APP_JWT_SECRET=<new-key>
+# APP_JWT_PREVIOUS_SECRET  ← remove this line entirely
+```
+
+```bash
+docker compose up -d --no-deps backend
+```
+
+### Step 5 — Post-Rotation Verification
 
 ```bash
 # 1. Confirm the backend started cleanly
 docker compose logs backend | grep "Started KeystoneApplication"
 
-# 2. Verify a new login returns a token
+# 2. Verify a new login returns a token signed with the new key
 curl -s -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"<manager-email>","password":"<manager-password>"}' \
   | jq '.token'
 # Expected: a non-empty JWT string
 
-# 3. Verify a token minted before rotation is now rejected
-# (replace <OLD_TOKEN> with the token you saved before starting)
+# 3. Verify an old-key token is now rejected (after window is closed)
 curl -s -o /dev/null -w "%{http_code}" \
   -H "Authorization: Bearer <OLD_TOKEN>" \
   http://localhost:8080/api/dashboard/summary
-# Expected: 403 (token signature verification failed)
+# Expected: 401 (token rejected — no previous-secret configured)
 ```
 
 If step 2 fails (no token returned), proceed immediately to the **Rollback** section.
 
-### Step 5 — Rollback (if new key is rejected)
+### Step 6 — Rollback (if new key is rejected)
 
 ```bash
 # Re-inject the previous key value (retrieved from your secret store or prior .env backup)
-# Update .env:
+# Re-open the window:
 APP_JWT_SECRET=<previous-key-from-secret-store>
+APP_JWT_PREVIOUS_SECRET=<new-key-that-failed>  # optional — allows tokens from failed attempt
 
 # Restart
 docker compose up -d --no-deps backend

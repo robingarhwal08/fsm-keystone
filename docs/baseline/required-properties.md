@@ -30,6 +30,7 @@ desired fail-fast behaviour.
 | `spring.jpa.show-sql` | `SPRING_JPA_SHOW_SQL` | `true` | Internal | Optional | ✓ optional | ✓ required | ✓ required | Must be `false` in staging/prod |
 | `spring.jpa.properties.hibernate.format_sql` | `SPRING_JPA_FORMAT_SQL` | `true` | Internal | Optional | ✓ optional | ✓ optional | ✓ optional | Dev convenience only |
 | `app.jwt.secret` | `APP_JWT_SECRET` | `8b7a0c7e...` ⚠️ | **Restricted** | **REQUIRED-NO-DEFAULT** | ✓ required | ✓ required | ✓ required | **Exposed in public repo — rotate immediately; min 64-char hex** |
+| `app.jwt.previous-secret` | `APP_JWT_PREVIOUS_SECRET` | _(empty)_ | **Restricted** | Optional | ✓ optional | ✓ optional | ✓ optional | Set during rotation window only; min 64-char when present; remove once jwt.verification.fallback drains to zero |
 | `app.jwt.expiration-ms` | `APP_JWT_EXPIRATION_MS` | `86400000` (24 h) | Internal | Optional | ✓ optional | ✓ required | ✓ required | Prod should be ≤ 900000 (15 min) per architecture target |
 | `app.cors.allowed-origin` | `APP_CORS_ALLOWED_ORIGIN` | `http://localhost:5173` | Internal | Required | ✓ required | ✓ required | ✓ required | Must match frontend origin; localhost is wrong in non-dev |
 
