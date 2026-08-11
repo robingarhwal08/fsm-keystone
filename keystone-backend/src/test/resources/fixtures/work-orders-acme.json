@@ -1,0 +1,158 @@
+[
+  {
+    "id": 301,
+    "workOrderNumber": "WO-ACME-0001",
+    "title": "ACME HVAC Repair",
+    "description": "HVAC system not cooling properly in building A",
+    "status": "CREATED",
+    "priority": "HIGH",
+    "scheduledStart": "2026-01-15T09:00:00",
+    "scheduledEnd": "2026-01-15T17:00:00",
+    "actualStart": null,
+    "actualEnd": null,
+    "createdAt": "2026-01-15T09:00:00",
+    "updatedAt": "2026-01-15T09:00:00",
+    "customer": {
+      "id": 101,
+      "name": "ACME Corp",
+      "email": "acme@example.test",
+      "phone": "555-0101",
+      "billingAddress": "101 ACME Way, Springfield, IL 62701",
+      "createdAt": "2026-01-15T09:00:00",
+      "updatedAt": "2026-01-15T09:00:00"
+    },
+    "site": {
+      "id": 201,
+      "siteName": "ACME HQ",
+      "address": "10 Main Street",
+      "city": "Springfield",
+      "state": "IL",
+      "pincode": "62701",
+      "latitude": null,
+      "longitude": null,
+      "contactPerson": "Alice Manager",
+      "contactPhone": "555-2001"
+    },
+    "createdBy": {
+      "id": 401,
+      "fullName": "Scenario Manager",
+      "email": "scenario.manager@example.test",
+      "phone": "555-4001",
+      "role": "MANAGER",
+      "active": true,
+      "createdAt": "2026-01-15T09:00:00",
+      "customer": null
+    },
+    "assignedTechnician": null
+  },
+  {
+    "id": 302,
+    "workOrderNumber": "WO-ACME-0002",
+    "title": "ACME Pump Replacement",
+    "description": "Replace failing pump in warehouse B",
+    "status": "ASSIGNED",
+    "priority": "CRITICAL",
+    "scheduledStart": "2026-01-15T09:00:00",
+    "scheduledEnd": "2026-01-15T17:00:00",
+    "actualStart": null,
+    "actualEnd": null,
+    "createdAt": "2026-01-15T09:00:00",
+    "updatedAt": "2026-01-15T09:00:00",
+    "customer": {
+      "id": 101,
+      "name": "ACME Corp",
+      "email": "acme@example.test",
+      "phone": "555-0101",
+      "billingAddress": "101 ACME Way, Springfield, IL 62701",
+      "createdAt": "2026-01-15T09:00:00",
+      "updatedAt": "2026-01-15T09:00:00"
+    },
+    "site": {
+      "id": 202,
+      "siteName": "ACME Warehouse",
+      "address": "20 Park Avenue",
+      "city": "Shelbyville",
+      "state": "IL",
+      "pincode": "62702",
+      "latitude": null,
+      "longitude": null,
+      "contactPerson": "Bob Supervisor",
+      "contactPhone": "555-2002"
+    },
+    "createdBy": {
+      "id": 401,
+      "fullName": "Scenario Manager",
+      "email": "scenario.manager@example.test",
+      "phone": "555-4001",
+      "role": "MANAGER",
+      "active": true,
+      "createdAt": "2026-01-15T09:00:00",
+      "customer": null
+    },
+    "assignedTechnician": {
+      "id": 403,
+      "fullName": "Scenario Technician",
+      "email": "scenario.technician@example.test",
+      "phone": "555-4003",
+      "role": "TECHNICIAN",
+      "active": true,
+      "createdAt": "2026-01-15T09:00:00",
+      "customer": null
+    }
+  },
+  {
+    "id": 303,
+    "workOrderNumber": "WO-ACME-0003",
+    "title": "ACME Electrical Inspection",
+    "description": "Annual electrical safety inspection",
+    "status": "IN_PROGRESS",
+    "priority": "MEDIUM",
+    "scheduledStart": "2026-01-15T09:00:00",
+    "scheduledEnd": "2026-01-15T17:00:00",
+    "actualStart": "2026-01-15T09:00:00",
+    "actualEnd": null,
+    "createdAt": "2026-01-15T09:00:00",
+    "updatedAt": "2026-01-15T09:00:00",
+    "customer": {
+      "id": 101,
+      "name": "ACME Corp",
+      "email": "acme@example.test",
+      "phone": "555-0101",
+      "billingAddress": "101 ACME Way, Springfield, IL 62701",
+      "createdAt": "2026-01-15T09:00:00",
+      "updatedAt": "2026-01-15T09:00:00"
+    },
+    "site": {
+      "id": 201,
+      "siteName": "ACME HQ",
+      "address": "10 Main Street",
+      "city": "Springfield",
+      "state": "IL",
+      "pincode": "62701",
+      "latitude": null,
+      "longitude": null,
+      "contactPerson": "Alice Manager",
+      "contactPhone": "555-2001"
+    },
+    "createdBy": {
+      "id": 401,
+      "fullName": "Scenario Manager",
+      "email": "scenario.manager@example.test",
+      "phone": "555-4001",
+      "role": "MANAGER",
+      "active": true,
+      "createdAt": "2026-01-15T09:00:00",
+      "customer": null
+    },
+    "assignedTechnician": {
+      "id": 403,
+      "fullName": "Scenario Technician",
+      "email": "scenario.technician@example.test",
+      "phone": "555-4003",
+      "role": "TECHNICIAN",
+      "active": true,
+      "createdAt": "2026-01-15T09:00:00",
+      "customer": null
+    }
+  }
+]

@@ -1,0 +1,103 @@
+[
+  {
+    "id": 304,
+    "workOrderNumber": "WO-GLOBEX-0001",
+    "title": "GLOBEX Assembly Line Repair",
+    "description": "Conveyor belt broken on line 3",
+    "status": "CREATED",
+    "priority": "CRITICAL",
+    "scheduledStart": "2026-01-15T09:00:00",
+    "scheduledEnd": "2026-01-15T17:00:00",
+    "actualStart": null,
+    "actualEnd": null,
+    "createdAt": "2026-01-15T09:00:00",
+    "updatedAt": "2026-01-15T09:00:00",
+    "customer": {
+      "id": 102,
+      "name": "GLOBEX Ltd",
+      "email": "globex@example.test",
+      "phone": "555-0102",
+      "billingAddress": "102 Globex Avenue, Capital City, IL 62702",
+      "createdAt": "2026-01-15T09:00:00",
+      "updatedAt": "2026-01-15T09:00:00"
+    },
+    "site": {
+      "id": 203,
+      "siteName": "GLOBEX Plant",
+      "address": "30 Oak Road",
+      "city": "Capital City",
+      "state": "IL",
+      "pincode": "62703",
+      "latitude": null,
+      "longitude": null,
+      "contactPerson": "Carol Plant Manager",
+      "contactPhone": "555-2003"
+    },
+    "createdBy": {
+      "id": 401,
+      "fullName": "Scenario Manager",
+      "email": "scenario.manager@example.test",
+      "phone": "555-4001",
+      "role": "MANAGER",
+      "active": true,
+      "createdAt": "2026-01-15T09:00:00",
+      "customer": null
+    },
+    "assignedTechnician": null
+  },
+  {
+    "id": 305,
+    "workOrderNumber": "WO-GLOBEX-0002",
+    "title": "GLOBEX CNC Calibration",
+    "description": "Monthly CNC machine calibration PM service",
+    "status": "IN_PROGRESS",
+    "priority": "HIGH",
+    "scheduledStart": "2026-01-15T09:00:00",
+    "scheduledEnd": "2026-01-15T17:00:00",
+    "actualStart": "2026-01-15T09:00:00",
+    "actualEnd": null,
+    "createdAt": "2026-01-15T09:00:00",
+    "updatedAt": "2026-01-15T09:00:00",
+    "customer": {
+      "id": 102,
+      "name": "GLOBEX Ltd",
+      "email": "globex@example.test",
+      "phone": "555-0102",
+      "billingAddress": "102 Globex Avenue, Capital City, IL 62702",
+      "createdAt": "2026-01-15T09:00:00",
+      "updatedAt": "2026-01-15T09:00:00"
+    },
+    "site": {
+      "id": 203,
+      "siteName": "GLOBEX Plant",
+      "address": "30 Oak Road",
+      "city": "Capital City",
+      "state": "IL",
+      "pincode": "62703",
+      "latitude": null,
+      "longitude": null,
+      "contactPerson": "Carol Plant Manager",
+      "contactPhone": "555-2003"
+    },
+    "createdBy": {
+      "id": 401,
+      "fullName": "Scenario Manager",
+      "email": "scenario.manager@example.test",
+      "phone": "555-4001",
+      "role": "MANAGER",
+      "active": true,
+      "createdAt": "2026-01-15T09:00:00",
+      "customer": null
+    },
+    "assignedTechnician": {
+      "id": 403,
+      "fullName": "Scenario Technician",
+      "email": "scenario.technician@example.test",
+      "phone": "555-4003",
+      "role": "TECHNICIAN",
+      "active": true,
+      "createdAt": "2026-01-15T09:00:00",
+      "customer": null
+    }
+  }
+]
