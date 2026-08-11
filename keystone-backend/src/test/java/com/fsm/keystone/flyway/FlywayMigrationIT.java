@@ -73,9 +73,8 @@ class FlywayMigrationIT {
     }
 
     @Test
-    void flyway_noMigrations_applied_onEmptyDirectory() {
-        // Empty migration directory → Flyway creates schema history but applies nothing.
-        assertEquals(0, flyway.info().applied().length,
-                "No migrations should be applied when the migration directory is empty");
+    void flyway_V1Migration_applied_onFreshDatabase() {
+        assertEquals(1, flyway.info().applied().length,
+                "V1__initial_schema.sql must be applied on a fresh database");
     }
 }
