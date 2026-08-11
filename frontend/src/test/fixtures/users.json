@@ -1,0 +1,52 @@
+[
+  {
+    "id": 401,
+    "fullName": "Scenario Manager",
+    "email": "scenario.manager@example.test",
+    "phone": "555-4001",
+    "role": "MANAGER",
+    "active": true,
+    "customerId": null,
+    "createdAt": "2026-01-15T09:00:00"
+  },
+  {
+    "id": 402,
+    "fullName": "Scenario Dispatcher",
+    "email": "scenario.dispatcher@example.test",
+    "phone": "555-4002",
+    "role": "DISPATCHER",
+    "active": true,
+    "customerId": null,
+    "createdAt": "2026-01-15T09:00:00"
+  },
+  {
+    "id": 403,
+    "fullName": "Scenario Technician",
+    "email": "scenario.technician@example.test",
+    "phone": "555-4003",
+    "role": "TECHNICIAN",
+    "active": true,
+    "customerId": null,
+    "createdAt": "2026-01-15T09:00:00"
+  },
+  {
+    "id": 404,
+    "fullName": "ACME Customer User",
+    "email": "scenario.acme.user@example.test",
+    "phone": "555-4004",
+    "role": "CUSTOMER",
+    "active": true,
+    "customerId": 101,
+    "createdAt": "2026-01-15T09:00:00"
+  },
+  {
+    "id": 405,
+    "fullName": "GLOBEX Customer User",
+    "email": "scenario.globex.user@example.test",
+    "phone": "555-4005",
+    "role": "CUSTOMER",
+    "active": true,
+    "customerId": 102,
+    "createdAt": "2026-01-15T09:00:00"
+  }
+]

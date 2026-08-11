@@ -1,0 +1,29 @@
+[
+  {
+    "id": 501,
+    "partName": "Hydraulic Seal Kit",
+    "partNumber": "HSK-001",
+    "description": "Seal kit for hydraulic pump maintenance",
+    "unitPrice": 45.00,
+    "stockQuantity": 12,
+    "active": true
+  },
+  {
+    "id": 502,
+    "partName": "Filter Element",
+    "partNumber": "FE-002",
+    "description": "Replacement filter element for HVAC units",
+    "unitPrice": 28.50,
+    "stockQuantity": 1,
+    "active": true
+  },
+  {
+    "id": 503,
+    "partName": "Bearing Assembly",
+    "partNumber": "BA-003",
+    "description": "Heavy-duty bearing assembly for conveyor belts",
+    "unitPrice": 120.00,
+    "stockQuantity": 0,
+    "active": true
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "id": 101,
+    "name": "ACME Corp",
+    "email": "acme@example.test",
+    "phone": "555-0101",
+    "billingAddress": "101 ACME Way, Springfield, IL 62701",
+    "createdAt": "2026-01-15T09:00:00",
+    "updatedAt": "2026-01-15T09:00:00"
+  },
+  {
+    "id": 102,
+    "name": "GLOBEX Ltd",
+    "email": "globex@example.test",
+    "phone": "555-0102",
+    "billingAddress": "102 Globex Avenue, Capital City, IL 62702",
+    "createdAt": "2026-01-15T09:00:00",
+    "updatedAt": "2026-01-15T09:00:00"
+  }
+]

@@ -1,0 +1,30 @@
+{
+  "totalWorkOrders": 5,
+  "assignedWorkOrders": 2,
+  "inProgressWorkOrders": 2,
+  "completedWorkOrders": 0,
+  "criticalWorkOrders": 2,
+  "availableTechnicians": 1,
+  "totalCustomers": 2,
+  "lowStockParts": 2,
+  "recentWorkOrders": [
+    {
+      "id": 301,
+      "workOrderNumber": "WO-ACME-0001",
+      "title": "ACME HVAC Repair",
+      "status": "CREATED",
+      "priority": "HIGH",
+      "customer": { "id": 101, "name": "ACME Corp" },
+      "site": { "id": 201, "siteName": "ACME HQ" }
+    },
+    {
+      "id": 302,
+      "workOrderNumber": "WO-ACME-0002",
+      "title": "ACME Pump Replacement",
+      "status": "ASSIGNED",
+      "priority": "CRITICAL",
+      "customer": { "id": 101, "name": "ACME Corp" },
+      "site": { "id": 202, "siteName": "ACME Warehouse" }
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+[
+  {
+    "id": 201,
+    "siteName": "ACME HQ",
+    "address": "10 Main Street",
+    "city": "Springfield",
+    "state": "IL",
+    "pincode": "62701",
+    "latitude": null,
+    "longitude": null,
+    "contactPerson": "Alice Manager",
+    "contactPhone": "555-2001",
+    "customer": {
+      "id": 101,
+      "name": "ACME Corp",
+      "email": "acme@example.test",
+      "phone": "555-0101",
+      "billingAddress": "101 ACME Way, Springfield, IL 62701",
+      "createdAt": "2026-01-15T09:00:00",
+      "updatedAt": "2026-01-15T09:00:00"
+    }
+  },
+  {
+    "id": 202,
+    "siteName": "ACME Warehouse",
+    "address": "20 Park Avenue",
+    "city": "Shelbyville",
+    "state": "IL",
+    "pincode": "62702",
+    "latitude": null,
+    "longitude": null,
+    "contactPerson": "Bob Supervisor",
+    "contactPhone": "555-2002",
+    "customer": {
+      "id": 101,
+      "name": "ACME Corp",
+      "email": "acme@example.test",
+      "phone": "555-0101",
+      "billingAddress": "101 ACME Way, Springfield, IL 62701",
+      "createdAt": "2026-01-15T09:00:00",
+      "updatedAt": "2026-01-15T09:00:00"
+    }
+  },
+  {
+    "id": 203,
+    "siteName": "GLOBEX Plant",
+    "address": "30 Oak Road",
+    "city": "Capital City",
+    "state": "IL",
+    "pincode": "62703",
+    "latitude": null,
+    "longitude": null,
+    "contactPerson": "Carol Plant Manager",
+    "contactPhone": "555-2003",
+    "customer": {
+      "id": 102,
+      "name": "GLOBEX Ltd",
+      "email": "globex@example.test",
+      "phone": "555-0102",
+      "billingAddress": "102 Globex Avenue, Capital City, IL 62702",
+      "createdAt": "2026-01-15T09:00:00",
+      "updatedAt": "2026-01-15T09:00:00"
+    }
+  }
+]

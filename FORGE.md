@@ -105,3 +105,10 @@
 - **Files:** 25 (+1219/-0)
 - **Duration:** 965ss
 - **Approach:** Data-driven security characterization suite. route-role-matrix.csv encodes all 34 endpoints with expected status per ANONYMOUS/MANAGER/DISPATCHER/TECHNICIAN/CUSTOMER actor. RouteRoleMatrixRow is a Java record with resolvedPath() (substitutes {id}/{customerId} with '1') and expectedStatusFor(actor) helpers. RouteRoleMatrixLoader parses the CSV eagerly with line-number-keyed validation errors, loads body fixtures from /security/bodies/{key}.json, and rejects malformed rows/blank paths/missing fixtures with descriptive exceptions. RouteRoleMatrixTest is a @WebMvcTest slice that imports production SecurityConfig + real JwtAuthenticationFilter + JwtService (not mocked), mocks all 7 services and UserDetailsService, and runs a @ParameterizedTest over all 34×5=170 matrix combinations using status-class assertions (2xx/403). Nine bearer-token coverage tests exercise the real JWT filter path using TestJwtFactory tokens with stubbed UserDetailsService. A cross-check test asserts matrix row count == 34 (matching EndpointAuthorizationInventoryTest). CustomerDeleteGuardCharacterizationTest pins that anonymous DELETE /api/customers/{id} is currently 200 (commented-out @PreAuthorize). JwtFilterErrorCharacterizationTest pins that malformed and expired tokens produce non-200 (currently unhandled JJWT exceptions; target is 401). RouteRoleMatrixIT is a @SpringBootTest + Testcontainers PostgreSQL 16 integration test confirming 6 representative matrix rows against the real filter chain with seeded personas.
+
+## WO-011: User Story: WO-011 - Stand up frontend Vitest harness with MSW characterization tests
+- **Status:** completed
+- **Commit:** `85e7154`
+- **Files:** 21 (+1737/-1)
+- **Duration:** 729ss
+- **Approach:** N/A
