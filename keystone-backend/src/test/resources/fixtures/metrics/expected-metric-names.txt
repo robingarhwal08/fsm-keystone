@@ -1,0 +1,22 @@
+# Expected metric names emitted by /actuator/prometheus.
+# This file is used by ActuatorIT to assert the observability plane is correctly wired.
+# Each non-blank, non-comment line is a metric name prefix that must appear in the scrape output.
+#
+# Update this list when new metrics are added (e.g. custom business counters in later WOs).
+
+# HTTP server request latency — templated URIs prevent high-cardinality series per path variable.
+http_server_requests_seconds
+
+# HikariCP connection pool — alerts on pending count indicate pool exhaustion.
+hikaricp_connections_active
+hikaricp_connections_pending
+hikaricp_connections
+
+# JVM memory — used_bytes drives container memory-limit sizing.
+jvm_memory_used_bytes
+
+# Process CPU — spikes correlate with GC pauses and hot code paths.
+process_cpu_usage
+
+# Domain error counter — tagged by ErrorCode and HTTP status; graphable per error code.
+fsm_api_errors_total

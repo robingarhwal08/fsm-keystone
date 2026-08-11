@@ -119,3 +119,10 @@
 - **Files:** 16 (+1074/-1)
 - **Duration:** 986ss
 - **Approach:** N/A
+
+## WO-016: User Story: WO-016 - Actuator health probes and Prometheus metrics plane
+- **Status:** completed
+- **Commit:** `65df653`
+- **Files:** 12 (+570/-3)
+- **Duration:** 683ss
+- **Approach:** Added spring-boot-starter-actuator and micrometer-registry-prometheus to pom.xml. Configured application.properties with minimal exposure (health, info, prometheus), split liveness/readiness health groups so only readiness includes the db indicator, and set explicit HikariCP sizing (max 20, min-idle 5, timeout 3s, max-lifetime 30m) as env-overridable properties. Updated SecurityConfig to permitAll /actuator/health and /actuator/health/** while leaving /actuator/prometheus under anyRequest().authenticated(). Created ApiErrorMetrics @Component that increments fsm_api_errors_total counter tagged by code and HTTP status, injected into GlobalExceptionHandler via Optional<ApiErrorMetrics> so existing @WebMvcTest slices need no modification. Added wget-based Docker Compose healthcheck against /actuator/health/readiness and changed the frontend service to condition: service_healthy. Tests: unit test for ApiErrorMetrics with SimpleMeterRegistry, integration test (Testcontainers) asserting probe HTTP status, prometheus security, and non-exposed endpoint 404. Fixtures and runbook committed.

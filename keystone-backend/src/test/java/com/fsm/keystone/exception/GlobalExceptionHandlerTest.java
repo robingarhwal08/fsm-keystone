@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import java.util.Optional;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +37,7 @@ class GlobalExceptionHandlerTest {
 
     @BeforeEach
     void setUp() {
-        handler = new GlobalExceptionHandler();
+        handler = new GlobalExceptionHandler(Optional.empty());
         request = mock(HttpServletRequest.class);
         when(request.getRequestURI()).thenReturn("/api/test/path");
         when(request.getMethod()).thenReturn("GET");

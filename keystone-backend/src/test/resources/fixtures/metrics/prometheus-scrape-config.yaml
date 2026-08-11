@@ -1,0 +1,24 @@
+# Sample Prometheus scrape configuration for fsm-keystone.
+# Copy into your prometheus.yml scrape_configs section and adjust targets.
+#
+# The bearer_token_file approach keeps the JWT out of the config file.
+# Alternatively, use basic_auth if Prometheus has a service account user in the backend.
+
+scrape_configs:
+  - job_name: fsm-keystone
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: /actuator/prometheus
+    # /actuator/prometheus is protected by anyRequest().authenticated().
+    # Supply a long-lived service-account JWT or configure a management port
+    # (management.server.port) to keep the scrape path unauthenticated on an
+    # internal network interface only.
+    authorization:
+      type: Bearer
+      credentials_file: /etc/prometheus/fsm-keystone-token
+    static_configs:
+      - targets:
+          - springboot-app:8080
+        labels:
+          app: fsm-keystone
+          environment: production

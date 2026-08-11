@@ -2,6 +2,7 @@ package com.fsm.keystone.exception;
 
 import com.fsm.keystone.dto.ApiErrorResponse;
 import com.fsm.keystone.dto.FieldErrorDetail;
+import com.fsm.keystone.observability.ApiErrorMetrics;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -52,6 +54,17 @@ public class GlobalExceptionHandler {
     private static final int MAX_FIELD_ERRORS = 50;
     private static final Set<String> SENSITIVE_FIELDS = Set.of("password", "secret", "token");
     private static final String MASKED_MESSAGE = "Value must satisfy constraints";
+
+    private final ApiErrorMetrics metrics;
+
+    /**
+     * {@link ApiErrorMetrics} is optional — it is absent in lightweight {@code @WebMvcTest}
+     * slices that do not load the full observability stack. When absent, error responses are
+     * still returned normally; counters are simply not incremented.
+     */
+    public GlobalExceptionHandler(Optional<ApiErrorMetrics> metricsOpt) {
+        this.metrics = metricsOpt.orElse(null);
+    }
 
     // ── ApiException hierarchy (WO-012) ──────────────────────────────────────
 
@@ -269,7 +282,10 @@ public class GlobalExceptionHandler {
         return (id != null && !id.isBlank()) ? id : UUID.randomUUID().toString();
     }
 
-    private <T> ResponseEntity<T> respond(T body, HttpStatus status, String correlationId) {
+    private ResponseEntity<ApiErrorResponse> respond(ApiErrorResponse body, HttpStatus status, String correlationId) {
+        if (metrics != null) {
+            metrics.incrementError(body.code(), status.value());
+        }
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Correlation-Id", correlationId);
         return ResponseEntity.status(status).headers(headers).body(body);

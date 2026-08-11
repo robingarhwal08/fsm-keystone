@@ -56,13 +56,24 @@ services:
       - spring.datasource.password
       - app.jwt.secret
     restart: always
+    # eclipse-temurin:21-jdk (Ubuntu-based) ships with wget; curl is not installed.
+    # The probe targets /actuator/health/readiness so Compose waits for the datasource
+    # to be usable, not merely for the JVM process to start.
+    # start_period is generous to cover Flyway migrations (extended in a later epic).
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health/readiness || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 40s
 
   frontend:
     build:
       context: ./frontend
     container_name: react-app
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     ports:
       - "3000:80"
     restart: always

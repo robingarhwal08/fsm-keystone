@@ -49,6 +49,11 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
 
+                        // Actuator health probes — must be reachable without auth so that
+                        // container orchestration healthchecks succeed before any JWT is issued.
+                        // /actuator/prometheus stays authenticated (falls through to anyRequest).
+                        .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
+
                         // Public APIs
                         .requestMatchers("/api/auth/**").permitAll()
 
