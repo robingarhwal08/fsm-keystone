@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class EndpointAuthorizationInventoryTest {
 
     /** Documented endpoint total — update this constant if a controller handler is added or removed. */
-    private static final int EXPECTED_ENDPOINT_COUNT = 34;
+    private static final int EXPECTED_ENDPOINT_COUNT = 35;
     private static final String CONTROLLER_PACKAGE = "com.fsm.keystone.controller";
 
     @Test

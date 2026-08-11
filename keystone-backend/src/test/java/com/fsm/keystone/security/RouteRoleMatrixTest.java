@@ -142,6 +142,7 @@ class RouteRoleMatrixTest {
                 1L, "Test User", "test@fixture.test", null, Role.MANAGER, true, null, null);
         when(userService.getAllUsers()).thenReturn(Collections.emptyList());
         when(userService.getAllTechnicians()).thenReturn(Collections.emptyList());
+        when(userService.getMyProfile(any())).thenReturn(stubUserResponse);
         when(userService.updateUser(anyLong(), any())).thenReturn(stubUserResponse);
 
         // DashboardService
@@ -259,13 +260,13 @@ class RouteRoleMatrixTest {
                 .andExpect(status().is2xxSuccessful());
     }
 
-    /** UserController: GET /api/users with a CUSTOMER bearer token (permitAll). */
+    /** UserController: GET /api/users with a MANAGER bearer token. */
     @Test
-    void bearerToken_userController_getAllReturns200ForCustomer() throws Exception {
-        stubUserDetails(Personas.ACME_CUSTOMER_USER);
+    void bearerToken_userController_getAllReturns200ForManager() throws Exception {
+        stubUserDetails(Personas.MANAGER);
         mockMvc.perform(MockMvcRequestBuilders.get("/api/users")
                         .header("Authorization",
-                                TestJwtFactory.bearerHeaderFor(Personas.ACME_CUSTOMER_USER)))
+                                TestJwtFactory.bearerHeaderFor(Personas.MANAGER)))
                 .andExpect(status().is2xxSuccessful());
     }
 
@@ -288,7 +289,7 @@ class RouteRoleMatrixTest {
     @Test
     void matrixCoversAllInventoriedEndpoints() {
         // Keep in sync with EndpointAuthorizationInventoryTest.EXPECTED_ENDPOINT_COUNT
-        int expectedEndpointCount = 34;
+        int expectedEndpointCount = 35;
         int matrixCount = LOADER.rows().size();
         assertEquals(expectedEndpointCount, matrixCount,
                 "route-role-matrix.csv has " + matrixCount + " rows but WO-010 inventory "

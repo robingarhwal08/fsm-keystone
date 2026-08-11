@@ -28,6 +28,7 @@ public enum ErrorCode {
     EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT),
     DUPLICATE_CUSTOMER(HttpStatus.CONFLICT),
     DUPLICATE_SITE(HttpStatus.CONFLICT),
+    LAST_MANAGER(HttpStatus.CONFLICT),
 
     // ── Validation 400 ─────────────────────────────────────────────────────
     INVALID_TIME_RANGE(HttpStatus.BAD_REQUEST),

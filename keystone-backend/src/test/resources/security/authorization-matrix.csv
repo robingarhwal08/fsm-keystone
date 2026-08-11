@@ -13,16 +13,17 @@ PartController,GET,/api/parts/{id},authenticated,false,,403,200,200,200,200
 PartController,PUT,/api/parts/{id},authenticated,true,"hasRole('MANAGER')",403,200,403,403,403
 PartController,DELETE,/api/parts/{id},authenticated,true,"hasRole('MANAGER')",403,200,403,403,403
 PartUsageController,POST,/api/part-usage,permitAll,false,,200,200,200,200,200
-SiteController,POST,/api/sites,authenticated,false,,403,200,200,200,200
-SiteController,GET,/api/sites,authenticated,false,,403,200,200,200,200
-SiteController,GET,/api/sites/customer/{customerId},authenticated,false,,403,200,200,200,200
-SiteController,PUT,/api/sites/{id},authenticated,false,,403,200,200,200,200
-SiteController,DELETE,/api/sites/{id},authenticated,false,,403,200,200,200,200
+SiteController,POST,/api/sites,authenticated,true,"hasRole('MANAGER')",403,200,403,403,403
+SiteController,GET,/api/sites,authenticated,true,"hasAnyRole('MANAGER','DISPATCHER','TECHNICIAN','CUSTOMER')",403,200,200,200,200
+SiteController,GET,/api/sites/customer/{customerId},authenticated,true,"hasAnyRole('MANAGER','DISPATCHER') or (hasRole('CUSTOMER') and #customerId == authentication.principal.customer?.id)",403,200,200,403,403
+SiteController,PUT,/api/sites/{id},authenticated,true,"hasRole('MANAGER')",403,200,403,403,403
+SiteController,DELETE,/api/sites/{id},authenticated,true,"hasRole('MANAGER')",403,200,403,403,403
 TimeLogController,POST,/api/time-logs,permitAll,false,,200,200,200,200,200
-UserController,GET,/api/users,permitAll,false,,200,200,200,200,200
-UserController,GET,/api/users/technicians,permitAll,false,,200,200,200,200,200
-UserController,PUT,/api/users/{id},permitAll,false,,200,200,200,200,200
-UserController,DELETE,/api/users/{id},permitAll,false,,204,204,204,204,204
+UserController,GET,/api/users,permitAll,true,"hasRole('MANAGER')",403,200,403,403,403
+UserController,GET,/api/users/technicians,permitAll,true,"hasRole('MANAGER')",403,200,403,403,403
+UserController,GET,/api/users/me,permitAll,true,"isAuthenticated()",403,200,200,200,200
+UserController,PUT,/api/users/{id},permitAll,true,"hasRole('MANAGER')",403,200,403,403,403
+UserController,DELETE,/api/users/{id},permitAll,true,"hasRole('MANAGER')",403,204,403,403,403
 WorkOrderController,POST,/api/work-orders,authenticated,true,"hasAnyRole('MANAGER','DISPATCHER','CUSTOMER')",403,200,200,403,200
 WorkOrderController,GET,/api/work-orders,authenticated,false,,403,200,200,200,200
 WorkOrderController,GET,/api/work-orders/{id},authenticated,false,,403,200,200,200,200
