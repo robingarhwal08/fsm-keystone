@@ -84,12 +84,7 @@ export default function Sites() {
       load();
 
     } catch (error) {
-
-      console.error(
-        "Save Site Failed",
-        error
-      );
-
+      alert(error.response?.data?.message || "Could not save site.");
     }
   };
 
@@ -130,12 +125,7 @@ export default function Sites() {
       load();
 
     } catch (error) {
-
-      console.error(
-        "Delete Failed",
-        error
-      );
-
+      alert(error.response?.data?.message || "Could not delete site.");
     }
   };
 

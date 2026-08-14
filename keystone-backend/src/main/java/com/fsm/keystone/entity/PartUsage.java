@@ -1,5 +1,6 @@
 package com.fsm.keystone.entity;
 
+import com.fsm.keystone.enums.PartUsageStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -25,6 +26,10 @@ public class PartUsage {
 
     private LocalDateTime usedAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "usage_status")
+    private PartUsageStatus usageStatus;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "work_order_id") // many parts uages can be happen by one work order
     private WorkOrder workOrder;
@@ -39,6 +44,9 @@ public class PartUsage {
 
     @PrePersist
     public void onCreate(){
-        usedAt=LocalDateTime.now();
+        if(usedAt==null)
+            usedAt=LocalDateTime.now();
+        if(usageStatus==null)
+            usageStatus=PartUsageStatus.USED;
     }
 }

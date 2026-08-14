@@ -75,12 +75,7 @@ export default function Customers() {
             loadCustomers();
 
         } catch (error) {
-
-            console.error(
-                "Customer save failed",
-                error
-            );
-
+            alert(error.response?.data?.message || "Could not save customer.");
         }
     };
 
@@ -121,12 +116,7 @@ export default function Customers() {
             await loadCustomers();
 
         } catch (error) {
-
-            console.error(
-                "Delete Failed:",
-                error.response || error
-            );
-
+            alert(error.response?.data?.message || "Could not delete customer.");
         }
     };
 

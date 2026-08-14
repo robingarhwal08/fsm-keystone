@@ -23,6 +23,8 @@ public class TimeLog {
 
     private BigDecimal hoursSpent;
 
+    private Integer minutesSpent;
+
     @Column(length = 1000)
     private String workDescription;
 

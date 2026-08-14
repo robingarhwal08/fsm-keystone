@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { signup, getCustomers } from "../services/commonService";
+import { signup, getSignupCustomers } from "../services/commonService";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function Signup({ onSignup, goLogin }) {
@@ -18,9 +18,9 @@ export default function Signup({ onSignup, goLogin }) {
   const [err, setErr] = useState("");
   const [customers, setCustomers] = useState([]);
   useEffect(() => {
-    getCustomers()
+    getSignupCustomers()
       .then((r) => {
-        setCustomers(r.data);
+        setCustomers(r.data || []);
       })
       .catch((err) => {
         console.error(err);

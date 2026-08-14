@@ -2,9 +2,11 @@ package com.fsm.keystone.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fsm.keystone.enums.Priority;
+import com.fsm.keystone.enums.SlaStatus;
 import com.fsm.keystone.enums.WorkOrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +33,7 @@ public class WorkOrder {
     private String description;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status")
     private WorkOrderStatus status;
 
     @Enumerated(EnumType.STRING)
@@ -43,6 +46,17 @@ public class WorkOrder {
     private LocalDateTime actualStart;
 
     private LocalDateTime actualEnd;
+
+    @Column(name = "sla_due_at")
+    private LocalDateTime slaDueAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sla_status")
+    private SlaStatus slaStatus;
+
+    private BigDecimal totalPartsCost;
+
+    private Integer totalMinutes;
 
     private LocalDateTime createdAt;
 
@@ -82,7 +96,13 @@ public class WorkOrder {
         createdAt=LocalDateTime.now();
         updatedAt=createdAt;
         if(status==null)
-            status=WorkOrderStatus.CREATED;
+            status=WorkOrderStatus.NEW;
+        if(slaStatus==null)
+            slaStatus=SlaStatus.ON_TRACK;
+        if(totalPartsCost==null)
+            totalPartsCost=BigDecimal.ZERO;
+        if(totalMinutes==null)
+            totalMinutes=0;
         if(priority==null)
             priority=Priority.MEDIUM;
         if(workOrderNumber==null)

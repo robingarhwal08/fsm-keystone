@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { applyTheme, getTheme } from "./utils/theme";
 
 import Layout from "./components/Layout";
 
@@ -9,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Customers from "./pages/Customers";
 import Sites from "./pages/Sites";
 import WorkOrders from "./pages/WorkOrders";
+import Board from "./pages/Board";
 import Parts from "./pages/Parts";
 
 import CustomerRequests from "./pages/CustomerRequests";
@@ -32,9 +34,24 @@ export default function App() {
         JSON.parse(localStorage.getItem("user") || "null")
     );
 
+    const [theme, setTheme] = useState(getTheme);
+
+    useEffect(() => {
+        if (page === "login" || page === "signup") {
+            document.body.classList.remove("dark");
+        } else {
+            applyTheme(theme);
+        }
+    }, [page, theme]);
+
+    const toggleTheme = () => {
+        setTheme((prev) => applyTheme(prev === "dark" ? "light" : "dark"));
+    };
+
     const logout = () => {
 
-        localStorage.clear();
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
 
         setUser(null);
 
@@ -121,8 +138,18 @@ export default function App() {
                     />
                 );
 
+            case "board":
+                return <Board />;
+
+            case "myrequests":
+                return (
+                    <CustomerReports
+                        user={user}
+                    />
+                );
+
             case "parts":
-                return <Parts />;
+                return <Parts user={user} />;
 
             case "requests":
                 return (
@@ -160,6 +187,8 @@ export default function App() {
             setPage={setPage}
             user={user}
             logout={logout}
+            theme={theme}
+            toggleTheme={toggleTheme}
         >
 
             {renderPage()}

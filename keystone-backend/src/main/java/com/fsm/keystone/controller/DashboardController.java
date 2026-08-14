@@ -10,16 +10,15 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/dashboard")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class DashboardController {
 
     private final DashboardService dashboardService;
 
-    @GetMapping("/summary")
+    @GetMapping({"/dashboard/summary", "/reports/summary"})
     @PreAuthorize("hasAnyRole('MANAGER','DISPATCHER')")
     public Map<String, Object> summary() {
-
         return dashboardService.getDashboardSummary();
     }
 }

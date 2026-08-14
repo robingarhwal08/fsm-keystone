@@ -6,65 +6,64 @@ import {
     deletePart
 } from "../services/commonService";
 
-export default function Parts() {
+const emptyForm = {
+    partName: "",
+    description: "",
+    unitPrice: "",
+    stockQuantity: "",
+    active: true
+};
 
+export default function Parts({ user }) {
+
+  const canManage = user?.role === "MANAGER";
   const [rows, setRows] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [editingNumber, setEditingNumber] = useState("");
 
-  const [f, setF] = useState({
-    partName: "",
-    partNumber: "",
-    description: "",
-    unitPrice: 0,
-    stockQuantity: 0,
-    active: true
-  });
+  const [f, setF] = useState(emptyForm);
 
   const load = () =>
     getParts().then(r => setRows(r.data));
 
-  useEffect(load, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   const save = async e => {
 
       e.preventDefault();
-
+      try {
+      const payload = {
+          partName: f.partName,
+          description: f.description,
+          unitPrice: Number(f.unitPrice),
+          stockQuantity: Number(f.stockQuantity),
+          active: f.active
+      };
       if (editingId) {
-
-          await updatePart(
-              editingId,
-              f
-          );
-
+          await updatePart(editingId, payload);
       } else {
-
-          await createPart(f);
-
+          await createPart(payload);
       }
-
       setEditingId(null);
-
-      setF({
-          partName: "",
-          partNumber: "",
-          description: "",
-          unitPrice: 0,
-          stockQuantity: 0,
-          active: true
-      });
-
+      setEditingNumber("");
+      setF(emptyForm);
       load();
+      } catch (err) {
+          alert(err.response?.data?.message || "Could not save part.");
+      }
   };
 const editPart = (part) => {
 
     setEditingId(part.id);
+    setEditingNumber(part.partNumber || "");
 
     setF({
         partName: part.partName || "",
-        partNumber: part.partNumber || "",
         description: part.description || "",
-        unitPrice: part.unitPrice || 0,
-        stockQuantity: part.stockQuantity || 0,
+        unitPrice: part.unitPrice ?? "",
+        stockQuantity: part.stockQuantity ?? "",
         active: part.active
     });
 
@@ -84,9 +83,7 @@ const removePart = async (id) => {
         load();
 
     } catch (err) {
-
-        console.error(err);
-
+        alert(err.response?.data?.message || "Could not delete part.");
     }
 };
 
@@ -100,22 +97,26 @@ const removePart = async (id) => {
         }}
     >
 
+      {canManage && (
       <form className="panel" onSubmit={save}>
         <h2>
             {editingId ? "Edit Part" : "Add Part"}
         </h2>
 
         <input
-          placeholder="Part Name"
+          placeholder="Part name"
           value={f.partName}
           onChange={e => setF({ ...f, partName: e.target.value })}
+          required
         />
 
-        <input
-          placeholder="Part Number"
-          value={f.partNumber}
-          onChange={e => setF({ ...f, partNumber: e.target.value })}
-        />
+        {editingId && (
+          <input
+            value={editingNumber}
+            readOnly
+            title="Part number is generated automatically"
+          />
+        )}
 
         <input
           placeholder="Description"
@@ -125,16 +126,22 @@ const removePart = async (id) => {
 
         <input
           type="number"
-          placeholder="Unit Price"
+          min="0"
+          step="0.01"
+          placeholder="Unit price"
           value={f.unitPrice}
           onChange={e => setF({ ...f, unitPrice: e.target.value })}
+          required
         />
 
         <input
           type="number"
-          placeholder="Stock Qty"
+          min="0"
+          step="1"
+          placeholder="Stock quantity"
           value={f.stockQuantity}
           onChange={e => setF({ ...f, stockQuantity: e.target.value })}
+          required
         />
 
         <button
@@ -145,6 +152,7 @@ const removePart = async (id) => {
         </button>
 
       </form>
+      )}
 
       <section className="panel">
 
@@ -157,7 +165,7 @@ const removePart = async (id) => {
               <th>No</th>
               <th>Price</th>
               <th>Stock</th>
-              <th>Actions</th>
+              {canManage && <th>Actions</th>}
             </tr>
           </thead>
 
@@ -173,6 +181,7 @@ const removePart = async (id) => {
 
                   <td>{p.stockQuantity}</td>
 
+                  {canManage && (
                   <td>
 
                       <button
@@ -192,6 +201,7 @@ const removePart = async (id) => {
                       </button>
 
                   </td>
+                  )}
 
               </tr>
             )}

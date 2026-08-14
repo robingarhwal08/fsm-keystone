@@ -9,14 +9,20 @@ import {
   updateWorkOrderStatus,
   updateWorkOrder,
   deleteWorkOrder,
-  assignTechnician
+  assignTechnician,
+  getWorkOrderHistory
 } from "../services/commonService";
 
 import StatusBadge from "../components/StatusBadge";
+import StatusHistoryTable from "../components/StatusHistoryTable";
+import SlaBadge from "../components/SlaBadge";
 
 export default function WorkOrders({ user }) {
 
   const [rows, setRows] = useState([]);
+  const [query, setQuery] = useState("");
+  const [historyWorkOrder, setHistoryWorkOrder] = useState(null);
+  const [history, setHistory] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [sites, setSites] = useState([]);
   const [techs, setTechs] = useState([]);
@@ -54,11 +60,11 @@ export default function WorkOrders({ user }) {
      if (user?.role === "CUSTOMER") {
 
        setRows(
-         r.data.filter(
-           (w) =>
-             w.customer?.id === user.customerId ||
-             w.customerId === user.customerId
-         )
+         r.data.filter((w) => {
+           const creatorId = w.createdBy?.id || w.createdByUserId;
+           const uid = user?.userId || user?.id;
+           return uid != null && creatorId != null && String(creatorId) === String(uid);
+         })
        );
 
      } else if (user?.role === "TECHNICIAN") {
@@ -127,7 +133,7 @@ export default function WorkOrders({ user }) {
     });
   };
 
-  const removeWorkOrder = async (id) => {
+    const removeWorkOrder = async (id) => {
 
     const ok = window.confirm(
       "Are you sure you want to delete this work order?"
@@ -137,37 +143,43 @@ export default function WorkOrders({ user }) {
       return;
     }
 
-    await deleteWorkOrder(id);
-
-    load();
+    try {
+      await deleteWorkOrder(id);
+      load();
+    } catch (err) {
+      alert(err.response?.data?.message || "Could not delete work order.");
+    }
   };
 
   const save = async (e) => {
 
     e.preventDefault();
 
+    try {
     if (editingId) {
 
       await updateWorkOrder(
         editingId,
         {
-          ...f,
+          title: f.title,
+          description: f.description,
           customerId:
             user?.role === "CUSTOMER"
               ? user.customerId
-              : +f.customerId,
+              : Number(f.customerId),
 
-          siteId: +f.siteId,
+          siteId: Number(f.siteId),
 
           assignedTechnicianId:
             user?.role === "CUSTOMER"
               ? null
               : (
                   f.assignedTechnicianId
-                    ? +f.assignedTechnicianId
+                    ? Number(f.assignedTechnicianId)
                     : null
                 ),
 
+          priority: f.priority,
           createdByUserId: user?.userId
         }
       );
@@ -175,24 +187,26 @@ export default function WorkOrders({ user }) {
     } else {
 
       await createWorkOrder({
-        ...f,
+        title: f.title,
+        description: f.description,
 
         customerId:
           user?.role === "CUSTOMER"
             ? user.customerId
-            : +f.customerId,
+            : Number(f.customerId),
 
-        siteId: +f.siteId,
+        siteId: Number(f.siteId),
 
         assignedTechnicianId:
           user?.role === "CUSTOMER"
             ? null
             : (
                 f.assignedTechnicianId
-                  ? +f.assignedTechnicianId
+                  ? Number(f.assignedTechnicianId)
                   : null
               ),
 
+        priority: f.priority,
         createdByUserId: user?.userId
       });
 
@@ -201,7 +215,12 @@ export default function WorkOrders({ user }) {
     resetForm();
 
     load();
+    } catch (err) {
+      alert(err.response?.data?.message || "Could not save work order.");
+    }
   };
+
+  const locked = (status) => status === "CLOSED" || status === "CANCELLED";
 
   const setStatus = async (id, status) => {
 
@@ -209,6 +228,8 @@ export default function WorkOrders({ user }) {
       status,
       changedByUserId: user?.userId,
       comment: `Status changed to ${status}`
+    }).catch((err) => {
+      alert(err.response?.data?.message || "Status change rejected");
     });
 
     load();
@@ -221,6 +242,35 @@ export default function WorkOrders({ user }) {
 
     load();
   };
+
+  const openHistory = async (w) => {
+    const r = await getWorkOrderHistory(w.id);
+    setHistoryWorkOrder(w);
+    setHistory(r.data || []);
+  };
+
+  const selectedCustomerId =
+    user?.role === "CUSTOMER"
+      ? String(user.customerId || user.customer?.id || "")
+      : String(f.customerId || "");
+
+  const customerSites = sites.filter((s) => {
+    if (!selectedCustomerId) {
+      return false;
+    }
+    const siteCustomerId = String(s.customer?.id || s.customerId || "");
+    return siteCustomerId === selectedCustomerId;
+  });
+
+  const visible = rows.filter((w) => {
+    if (!query.trim()) return true;
+    const q = query.toLowerCase();
+    return (
+      String(w.workOrderNumber || "").toLowerCase().includes(q) ||
+      String(w.title || "").toLowerCase().includes(q) ||
+      String(w.status || "").toLowerCase().includes(q)
+    );
+  });
 
   return (
     <div className="page">
@@ -261,7 +311,8 @@ export default function WorkOrders({ user }) {
             onChange={(e) =>
               setF({
                 ...f,
-                customerId: e.target.value
+                customerId: e.target.value,
+                siteId: ""
               })
             }
           >
@@ -284,9 +335,11 @@ export default function WorkOrders({ user }) {
             })
           }
         >
-          <option value="">Select Site</option>
+          <option value="">
+            {selectedCustomerId ? "Select Site" : "Select a customer first"}
+          </option>
 
-          {sites.map((s) => (
+          {customerSites.map((s) => (
             <option key={s.id} value={s.id}>
               {s.siteName}
             </option>
@@ -349,6 +402,11 @@ export default function WorkOrders({ user }) {
       <section className="panel">
 
         <h2>Work Orders</h2>
+        <input
+          placeholder="Search by code, title, or status"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
 
         <table>
           <thead>
@@ -358,9 +416,9 @@ export default function WorkOrders({ user }) {
               <th>Customer</th>
               <th>Technician</th>
               <th>Status</th>
+              <th>SLA</th>
               <th>Action</th>
-
-              {user?.role === "MANAGER" && (
+              {(user?.role === "MANAGER" || user?.role === "DISPATCHER") && (
                 <th>Manage</th>
               )}
             </tr>
@@ -368,10 +426,10 @@ export default function WorkOrders({ user }) {
 
          <tbody>
 
-           {rows.length === 0 && (
+           {visible.length === 0 && (
              <tr>
                <td
-                 colSpan={user?.role === "MANAGER" ? 7 : 6}
+                 colSpan={user?.role === "MANAGER" || user?.role === "DISPATCHER" ? 8 : 7}
                  style={{
                    textAlign: "center",
                    padding: "20px"
@@ -382,7 +440,7 @@ export default function WorkOrders({ user }) {
              </tr>
            )}
 
-           {rows.map((w) => (
+           {visible.map((w) => (
               <tr key={w.id}>
 
                 <td>{w.workOrderNumber}</td>
@@ -416,25 +474,34 @@ export default function WorkOrders({ user }) {
                 </td>
 
                 <td>
+                  <SlaBadge workOrder={w} />
+                </td>
+
+                <td>
                   {user?.role === "TECHNICIAN" ? (
-                    <select
-                      value={w.status}
-                      onChange={(e) =>
-                        setStatus(w.id, e.target.value)
-                      }
-                    >
-                      <option value="ASSIGNED">ASSIGNED</option>
-                      <option value="IN_PROGRESS">IN_PROGRESS</option>
-                      <option value="COMPLETED">COMPLETED</option>
-                    </select>
+                    <div className="tech-actions">
+                      {w.status === "ASSIGNED" && (
+                        <button type="button" className="action-btn edit-btn" onClick={() => setStatus(w.id, "IN_PROGRESS")}>Start</button>
+                      )}
+                      {w.status === "IN_PROGRESS" && (
+                        <>
+                          <button type="button" className="action-btn" onClick={() => setStatus(w.id, "ON_HOLD")}>Hold</button>
+                          <button type="button" className="action-btn edit-btn" onClick={() => setStatus(w.id, "COMPLETED")}>Complete</button>
+                        </>
+                      )}
+                      {w.status === "ON_HOLD" && (
+                        <button type="button" className="action-btn edit-btn" onClick={() => setStatus(w.id, "IN_PROGRESS")}>Resume</button>
+                      )}
+                    </div>
                   ) : (
                     <select
-                      value={w.status}
+                      value={w.status === "CREATED" ? "NEW" : w.status}
+                      disabled={user?.role === "CUSTOMER"}
                       onChange={(e) =>
                         setStatus(w.id, e.target.value)
                       }
                     >
-                      <option value="CREATED">CREATED</option>
+                      <option value="NEW">NEW</option>
                       <option value="ASSIGNED">ASSIGNED</option>
                       <option value="IN_PROGRESS">IN_PROGRESS</option>
                       <option value="ON_HOLD">ON_HOLD</option>
@@ -443,9 +510,10 @@ export default function WorkOrders({ user }) {
                       <option value="CANCELLED">CANCELLED</option>
                     </select>
                   )}
+                  <button type="button" className="action-btn" onClick={() => openHistory(w)}>History</button>
                 </td>
 
-                {user?.role === "MANAGER" && (
+                {(user?.role === "MANAGER" || user?.role === "DISPATCHER") && (
                   <td>
                     <button
                         type="button"
@@ -470,6 +538,14 @@ export default function WorkOrders({ user }) {
 
           </tbody>
         </table>
+
+        {historyWorkOrder && (
+          <StatusHistoryTable
+            rows={history}
+            workOrderNumber={historyWorkOrder.workOrderNumber}
+            title={historyWorkOrder.title}
+          />
+        )}
 
       </section>
 

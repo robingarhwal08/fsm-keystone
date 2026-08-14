@@ -1,5 +1,7 @@
 package com.fsm.keystone.dto;
 
+import com.fsm.keystone.enums.PartUsageStatus;
+
 public record PartUsageRequest(
 
         Long workOrderId,
@@ -8,7 +10,9 @@ public record PartUsageRequest(
 
         Integer quantityUsed,
 
-        Long usedByUserId
+        Long usedByUserId,
+
+        PartUsageStatus usageStatus
 
 ) {
 }
