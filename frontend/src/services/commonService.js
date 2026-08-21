@@ -5,6 +5,7 @@ export const signup = (data) => api.post("/auth/signup", data);
 
 export const dashboardSummary = () => api.get("/dashboard/summary");
 export const getCustomers = () => api.get("/customers");
+export const getSignupCustomers = () => api.get("/auth/customers");
 export const createCustomer = (data) => api.post("/customers", data);
 export const getSites = () => api.get("/sites");
 export const createSite = (data) => api.post("/sites", data);
@@ -33,8 +34,14 @@ export const deleteSite = (id) =>
  export const createTimeLog = (data) =>
      api.post("/time-logs", data);
 
+export const getTimeLogs = () => api.get("/time-logs");
+
  export const createPartUsage = (data) =>
      api.post("/part-usage", data);
+
+export const getPartUsage = () => api.get("/part-usage");
+
+export const confirmPartUsage = (id) => api.patch(`/part-usage/${id}/confirm`);
 
  export const updatePart = (id, data) =>
      api.put(`/parts/${id}`, data);
@@ -53,3 +60,9 @@ export const deleteUser = (id) =>
 
 export const assignTechnician = (id, data) =>
     api.patch(`/work-orders/${id}/assign`, data);
+
+export const getWorkOrderBoard = () => api.get("/work-orders/board");
+export const getWorkOrderHistory = (id) => api.get(`/work-orders/${id}/history`);
+export const getNotifications = () => api.get("/notifications");
+export const markNotificationRead = (id) => api.patch(`/notifications/${id}/read`);
+export const reportsSummary = () => api.get("/reports/summary");

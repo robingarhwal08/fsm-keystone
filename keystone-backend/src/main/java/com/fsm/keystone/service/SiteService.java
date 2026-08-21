@@ -1,5 +1,6 @@
 package com.fsm.keystone.service;
 
+import com.fsm.keystone.entity.AppUser;
 import com.fsm.keystone.entity.Customer;
 import com.fsm.keystone.entity.Site;
 import com.fsm.keystone.repository.CustomerRepository;
@@ -15,6 +16,8 @@ public class SiteService {
 
     private final SiteRepository siteRepository;
     private final CustomerRepository customerRepository;
+    private final CurrentUserService currentUserService;
+    private final CascadeDeleteService cascadeDeleteService;
 
     public Site createSite(Site site) {
 
@@ -33,7 +36,15 @@ public class SiteService {
     }
 
     public List<Site> getAllSites() {
-
+        AppUser actor;
+        try {
+            actor = currentUserService.requireUser();
+        } catch (Exception ex) {
+            actor = null;
+        }
+        if (actor != null && actor.getRole() == com.fsm.keystone.enums.Role.CUSTOMER && actor.getCustomer() != null) {
+            return siteRepository.findByCustomerId(actor.getCustomer().getId());
+        }
         return siteRepository.findAll();
     }
 
@@ -88,13 +99,9 @@ public class SiteService {
     }
 
     public void deleteSite(Long id) {
-
-        Site site =
-                siteRepository.findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Site not found with id: " + id));
-
-        siteRepository.delete(site);
+        siteRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Site not found with id: " + id));
+        cascadeDeleteService.deleteSite(id);
     }
 }

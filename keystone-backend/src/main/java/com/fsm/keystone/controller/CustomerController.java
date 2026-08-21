@@ -16,7 +16,7 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @PostMapping
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasAnyRole('MANAGER','DISPATCHER')")
     public Customer create(@RequestBody Customer customer) {
         return customerService.createCustomer(customer);
     }
@@ -33,7 +33,7 @@ public class CustomerController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasAnyRole('MANAGER','DISPATCHER')")
     public Customer update(
             @PathVariable Long id,
             @RequestBody Customer input) {
@@ -42,7 +42,7 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{id}")
-//    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasAnyRole('MANAGER','DISPATCHER')")
     public void delete(@PathVariable Long id) {
         customerService.deleteCustomer(id);
     }

@@ -5,6 +5,7 @@ import com.fsm.keystone.repository.PartRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Year;
 import java.util.List;
 
 @Service
@@ -12,8 +13,10 @@ import java.util.List;
 public class PartService {
 
     private final PartRepository partRepository;
+    private final CascadeDeleteService cascadeDeleteService;
 
     public Part createPart(Part part) {
+        part.setPartNumber(nextPartNumber());
         return partRepository.save(part);
     }
 
@@ -34,7 +37,6 @@ public class PartService {
                         new RuntimeException("Part not found with id : " + id));
 
         part.setPartName(input.getPartName());
-        part.setPartNumber(input.getPartNumber());
         part.setDescription(input.getDescription());
         part.setUnitPrice(input.getUnitPrice());
         part.setStockQuantity(input.getStockQuantity());
@@ -44,11 +46,15 @@ public class PartService {
     }
 
     public void deletePart(Long id) {
-
-        Part part = partRepository.findById(id)
+        partRepository.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException("Part not found with id : " + id));
+        cascadeDeleteService.deletePart(id);
+    }
 
-        partRepository.delete(part);
+    private String nextPartNumber() {
+        String prefix = "PN-" + Year.now().getValue() + "-";
+        long seq = partRepository.countByPartNumberStartingWith(prefix) + 1;
+        return prefix + String.format("%04d", seq);
     }
 }

@@ -59,9 +59,7 @@ export default function Users() {
             loadUsers();
 
         } catch (error) {
-
-            console.log(error);
-
+            alert(error.response?.data?.message || "Could not delete user.");
         }
 
     };
@@ -119,9 +117,7 @@ export default function Users() {
             loadUsers();
 
         } catch (error) {
-
-            console.log(error);
-
+            alert(error.response?.data?.message || "Could not update user.");
         }
 
     };

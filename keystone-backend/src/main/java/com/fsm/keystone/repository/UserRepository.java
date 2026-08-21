@@ -22,4 +22,6 @@ public interface UserRepository extends JpaRepository<AppUser, Long> {
 
     // Optional: Fetch only active users except MANAGER
     List<AppUser> findByRoleNotAndActiveTrue(Role role);
+
+    List<AppUser> findByCustomer_Id(Long customerId);
 }

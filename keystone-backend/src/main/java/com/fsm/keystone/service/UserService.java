@@ -15,6 +15,7 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final CascadeDeleteService cascadeDeleteService;
 
     // Get all users except MANAGER
     public List<UserResponse> getAllUsers() {
@@ -50,10 +51,8 @@ public class UserService {
 
     // Delete user
     public void deleteUser(Long id) {
-
-        AppUser user = userRepository.findById(id)
+        userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
-        userRepository.delete(user);
+        cascadeDeleteService.deleteUser(id);
     }
 }

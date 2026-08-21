@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { getNotifications, markNotificationRead } from "../services/commonService";
+import ThemeToggle from "./ThemeToggle";
 
 import {
   Grid2X2,
@@ -8,7 +10,7 @@ import {
   Package,
   LogOut,
   Radio,
-  Search,
+  Bell,
   UserCog,
   FileText,
   Clock,
@@ -22,12 +24,24 @@ export default function Layout({
   page,
   setPage,
   user,
-  logout
+  logout,
+  theme,
+  toggleTheme
 }) {
 
   const [showMenu, setShowMenu] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notes, setNotes] = useState([]);
+  const [showNotes, setShowNotes] = useState(false);
   const profileRef = useRef(null);
+
+  const notesRef = useRef(null);
+
+  const loadNotes = () => {
+    getNotifications()
+      .then((r) => setNotes(Array.isArray(r.data) ? r.data : []))
+      .catch(() => setNotes([]));
+  };
 
   useEffect(() => {
 
@@ -40,15 +54,26 @@ export default function Layout({
         setShowMenu(false);
       }
 
+      if (
+          notesRef.current &&
+          !notesRef.current.contains(event.target)
+      ) {
+        setShowNotes(false);
+      }
+
     }
 
     document.addEventListener("mousedown", handleClickOutside);
 
+    loadNotes();
+    const timer = setInterval(loadNotes, 10000);
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      clearInterval(timer);
     };
 
-  }, []);
+  }, [user]);
 
   const role = user?.role;
 
@@ -61,7 +86,10 @@ export default function Layout({
       ["customers", "Customers", Users],
       ["sites", "Sites", MapPin],
       ["workorders", "Work Orders", ClipboardList],
+      ["board", "Board", ClipboardList],
       ["parts", "Inventory", Package],
+      ["partusage", "Part Usage", Wrench],
+      ["timelogs", "Time Logs", Clock],
       ["users", "Users", UserCog],
 //       ["reports", "Reports", FileText]
     ];
@@ -73,7 +101,11 @@ export default function Layout({
       ["dashboard", "Dashboard", Grid2X2],
 //       ["customers", "Customers", Users],
       ["sites", "Sites", MapPin],
-      ["workorders", "Work Orders", ClipboardList]
+      ["workorders", "Work Orders", ClipboardList],
+      ["board", "Board", ClipboardList],
+      ["parts", "Inventory", Package],
+      ["partusage", "Part Usage", Wrench],
+      ["timelogs", "Time Logs", Clock]
     ];
   }
 
@@ -174,9 +206,39 @@ export default function Layout({
            </p>
           </div>
 
-          <div className="search">
-            <Search size={20} />
-            <span>Search work orders...</span>
+          <ThemeToggle theme={theme} onToggle={toggleTheme} />
+
+          <div className="notes-wrap" ref={notesRef}>
+            <button
+              type="button"
+              className="notes-btn"
+              onClick={() => setShowNotes(!showNotes)}
+            >
+              <Bell size={18} />
+              {notes.filter((n) => !n.readFlag).length > 0 && (
+                <em>{notes.filter((n) => !n.readFlag).length}</em>
+              )}
+            </button>
+            {showNotes && (
+              <div className="notes-menu">
+                <strong className="notes-title">Notifications</strong>
+                {notes.length === 0 && <p>No notifications</p>}
+                {notes.slice(0, 12).map((n) => (
+                  <button
+                    key={n.id}
+                    type="button"
+                    className={n.readFlag ? "read" : ""}
+                    onClick={async () => {
+                      await markNotificationRead(n.id);
+                      setNotes((prev) => prev.map((x) => x.id === n.id ? { ...x, readFlag: true } : x));
+                    }}
+                  >
+                    <span>{n.message}</span>
+                    {n.workOrderNumber && <small>{n.workOrderNumber} · {n.type}</small>}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="live-pill">

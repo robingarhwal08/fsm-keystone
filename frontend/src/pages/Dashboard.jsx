@@ -6,17 +6,19 @@ import {
   getSites
 } from "../services/commonService";
 
-import StatCard from "../components/StatCard";
 import StatusBadge from "../components/StatusBadge";
+import SlaBadge from "../components/SlaBadge";
+import { AlertPills, BarChart, DonutChart, SlaGauge } from "../components/DashboardCharts";
 
 export default function Dashboard({ user, setPage }) {
   const [s, setS] = useState({});
 
   const [customerStats, setCustomerStats] = useState({
-    open: 0,
-    inProgress: 0,
-    completed: 0,
-    sites: 0
+    total: 0,
+    sites: 0,
+    byStatus: {},
+    byAssignee: {},
+    requests: []
   });
 
   const [technicianStats, setTechnicianStats] = useState({
@@ -46,40 +48,29 @@ export default function Dashboard({ user, setPage }) {
         getWorkOrders(),
         getSites()
       ]).then(([woRes, siteRes]) => {
-        const customerId = user.customerId;
+        const workOrders = woRes.data || [];
+        const sites = siteRes.data || [];
 
-        const workOrders = woRes.data.filter(
-          (w) =>
-            w.customer?.id === customerId ||
-            w.customerId === customerId
-        );
-
-        const sites = siteRes.data.filter(
-          (s) =>
-            s.customer?.id === customerId ||
-            s.customerId === customerId
-        );
+        const byStatus = {};
+        const byAssignee = {};
+        workOrders.forEach((w) => {
+          const status = w.status || "NEW";
+          byStatus[status] = (byStatus[status] || 0) + 1;
+          const assignee =
+            w.assignedTechnician?.fullName ||
+            w.assignedTechnician?.name ||
+            "Unassigned";
+          byAssignee[assignee] = (byAssignee[assignee] || 0) + 1;
+        });
 
         setCustomerStats({
-          open: workOrders.filter(
-            (w) =>
-              w.status === "CREATED" ||
-              w.status === "ASSIGNED"
-          ).length,
-
-          inProgress: workOrders.filter(
-            (w) => w.status === "IN_PROGRESS"
-          ).length,
-
-          completed: workOrders.filter(
-            (w) =>
-              w.status === "COMPLETED" ||
-              w.status === "CLOSED"
-          ).length,
-
-          sites: sites.length
+          total: workOrders.length,
+          sites: sites.length,
+          byStatus,
+          byAssignee,
+          requests: workOrders
         });
-      });
+      }).catch(() => {});
     }
 
     if (user?.role === "TECHNICIAN") {
@@ -111,7 +102,7 @@ export default function Dashboard({ user, setPage }) {
                 w.status === "CLOSED"
             ).length,
 
-            hoursLogged: 0,
+            hoursLogged: technicianJobs.reduce((sum, w) => sum + (w.totalMinutes || 0), 0) / 60,
 
             recentJobs: technicianJobs
           });
@@ -152,30 +143,31 @@ export default function Dashboard({ user, setPage }) {
 
         </section>
 
-        <div className="stats-grid">
-          <StatCard
-            title="My Jobs"
-            value={technicianStats.jobs}
-            color="blue"
-          />
-
-          <StatCard
-            title="In Progress"
-            value={technicianStats.inProgress}
-            color="orange"
-          />
-
-          <StatCard
-            title="Completed"
-            value={technicianStats.completed}
-            color="green"
-          />
-
-          <StatCard
-            title="Hours Logged"
-            value={technicianStats.hoursLogged}
-            color="purple"
-          />
+        <div className="chart-grid">
+          <section className="panel">
+            <DonutChart
+              title="My jobs"
+              slices={[
+                { label: "In progress", value: technicianStats.inProgress, color: "#c4785a" },
+                { label: "Completed", value: technicianStats.completed, color: "#5c7a5e" },
+                {
+                  label: "Other",
+                  value: Math.max(
+                    0,
+                    technicianStats.jobs - technicianStats.inProgress - technicianStats.completed
+                  ),
+                  color: "#7d8f6e"
+                }
+              ]}
+            />
+          </section>
+          <section className="panel">
+            <h2>Hours logged</h2>
+            <p className="chart-empty">Total hours on assigned jobs</p>
+            <h2 style={{ fontSize: 42, margin: "18px 0 0" }}>
+              {Number(technicianStats.hoursLogged || 0).toFixed(1)}
+            </h2>
+          </section>
         </div>
 
 
@@ -188,6 +180,24 @@ export default function Dashboard({ user, setPage }) {
   // ======================================================
 
   if (role === "CUSTOMER") {
+    const statusColors = {
+      NEW: "#a8a29a",
+      CREATED: "#a8a29a",
+      ASSIGNED: "#c4785a",
+      IN_PROGRESS: "#6b7f5e",
+      ON_HOLD: "#d4a574",
+      COMPLETED: "#5c7a5e",
+      CLOSED: "#4a5d4e",
+      CANCELLED: "#9a4f3f"
+    };
+    const statusSlices = Object.entries(customerStats.byStatus || {}).map(
+      ([label, value]) => ({
+        label,
+        value,
+        color: statusColors[label] || "#7d8f6e"
+      })
+    );
+
     return (
       <div className="page">
         <section className="hero">
@@ -210,31 +220,64 @@ export default function Dashboard({ user, setPage }) {
           </div>
         </section>
 
-        <div className="stats-grid">
-          <StatCard
-            title="Open Requests"
-            value={customerStats.open}
-            color="blue"
-          />
+        <AlertPills
+          items={[
+            { label: "Total requests created", value: customerStats.total },
+            { label: "My sites", value: customerStats.sites },
+            {
+              label: "Assigned",
+              value: customerStats.requests.filter((w) => w.assignedTechnician).length
+            },
+            {
+              label: "Unassigned",
+              value: customerStats.requests.filter((w) => !w.assignedTechnician).length
+            }
+          ]}
+        />
 
-          <StatCard
-            title="In Progress"
-            value={customerStats.inProgress}
-            color="orange"
-          />
-
-          <StatCard
-            title="Completed"
-            value={customerStats.completed}
-            color="green"
-          />
-
-          <StatCard
-            title="My Sites"
-            value={customerStats.sites}
-            color="purple"
-          />
+        <div className="chart-grid">
+          <section className="panel">
+            <DonutChart title="Request status" slices={statusSlices} />
+          </section>
+          <section className="panel">
+            <BarChart title="Assigned technician" data={customerStats.byAssignee} />
+          </section>
         </div>
+
+        <section className="panel">
+          <h2>My requests</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>WO</th>
+                <th>Title</th>
+                <th>Assigned to</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {customerStats.requests.length === 0 && (
+                <tr>
+                  <td colSpan="4">No requests created yet.</td>
+                </tr>
+              )}
+              {customerStats.requests.map((w) => (
+                <tr key={w.id}>
+                  <td>{w.workOrderNumber || "-"}</td>
+                  <td>{w.title}</td>
+                  <td>
+                    {w.assignedTechnician?.fullName ||
+                      w.assignedTechnician?.name ||
+                      "Unassigned"}
+                  </td>
+                  <td>
+                    <StatusBadge status={w.status} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
       </div>
     );
   }
@@ -244,39 +287,6 @@ export default function Dashboard({ user, setPage }) {
   // ======================================================
 
   if (role === "DISPATCHER") {
-    const dispatcherCards = [
-      [
-        "Total Work Orders",
-        s.totalWorkOrders || 0,
-        "blue"
-      ],
-      [
-        "Assigned Orders",
-        s.assignedWorkOrders || 0,
-        "orange"
-      ],
-      [
-        "In Progress",
-        s.inProgressWorkOrders || 0,
-        "purple"
-      ],
-      [
-        "Available Technicians",
-        s.availableTechnicians || 0,
-        "green"
-      ],
-      [
-        "Critical Orders",
-        s.criticalWorkOrders || 0,
-        "red"
-      ],
-      [
-        "Customers",
-        s.totalCustomers || 0,
-        "cyan"
-      ]
-    ];
-
     return (
       <div className="page">
         <section className="hero">
@@ -307,15 +317,30 @@ export default function Dashboard({ user, setPage }) {
           </button>
         </section>
 
-        <div className="stats-grid">
-          {dispatcherCards.map((c) => (
-            <StatCard
-              key={c[0]}
-              title={c[0]}
-              value={c[1]}
-              color={c[2]}
+        <AlertPills
+          items={[
+            { label: "Total work orders", value: s.totalWorkOrders || 0 },
+            { label: "Technicians", value: s.availableTechnicians || 0 },
+            { label: "Customers", value: s.totalCustomers || 0 },
+            { label: "Critical", value: s.criticalWorkOrders || 0, tone: "warn" }
+          ]}
+        />
+
+        <div className="chart-grid">
+          <section className="panel">
+            <DonutChart
+              title="Work order mix"
+              slices={[
+                { label: "New", value: s.createdWorkOrders || 0, color: "#a8a29a" },
+                { label: "Assigned", value: s.assignedWorkOrders || 0, color: "#c4785a" },
+                { label: "In progress", value: s.inProgressWorkOrders || 0, color: "#6b7f5e" },
+                { label: "Completed", value: s.completedWorkOrders || 0, color: "#5c7a5e" }
+              ]}
             />
-          ))}
+          </section>
+          <section className="panel">
+            <BarChart title="Workload by technician" data={s.byTechnician || {}} />
+          </section>
         </div>
 
         <section className="panel">
@@ -331,6 +356,7 @@ export default function Dashboard({ user, setPage }) {
                 <th>Site</th>
                 <th>Status</th>
                 <th>Priority</th>
+                <th>SLA</th>
               </tr>
             </thead>
 
@@ -356,6 +382,9 @@ export default function Dashboard({ user, setPage }) {
                   <td>
                     {w.priority}
                   </td>
+                  <td>
+                    <SlaBadge workOrder={w} />
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -368,49 +397,6 @@ export default function Dashboard({ user, setPage }) {
   // ======================================================
   // MANAGER DASHBOARD
   // ======================================================
-
-  const cards = [
-    [
-      "Total Work Orders",
-      s.totalWorkOrders || 0,
-      "blue"
-    ],
-    [
-      "Assigned",
-      s.assignedWorkOrders || 0,
-      "orange"
-    ],
-    [
-      "In Progress",
-      s.inProgressWorkOrders || 0,
-      "purple"
-    ],
-    [
-      "Completed",
-      s.completedWorkOrders || 0,
-      "green"
-    ],
-    [
-      "Critical",
-      s.criticalWorkOrders || 0,
-      "red"
-    ],
-    [
-      "Technicians",
-      s.availableTechnicians || 0,
-      "cyan"
-    ],
-    [
-      "Customers",
-      s.totalCustomers || 0,
-      "blue"
-    ],
-    [
-      "Low Stock Parts",
-      s.lowStockParts || 0,
-      "red"
-    ]
-  ];
 
   return (
     <div className="page">
@@ -442,15 +428,41 @@ export default function Dashboard({ user, setPage }) {
         </button>
       </section>
 
-      <div className="stats-grid">
-        {cards.map((c) => (
-          <StatCard
-            key={c[0]}
-            title={c[0]}
-            value={c[1]}
-            color={c[2]}
+      <AlertPills
+        items={[
+          { label: "Technicians", value: s.availableTechnicians || 0 },
+          { label: "Customers", value: s.totalCustomers || 0 },
+          { label: "Critical", value: s.criticalWorkOrders || 0, tone: (s.criticalWorkOrders || 0) > 0 ? "warn" : "" },
+          { label: "Overdue", value: s.overdueWorkOrders || 0, tone: (s.overdueWorkOrders || 0) > 0 ? "warn" : "ok" },
+          { label: "Low stock", value: s.lowStockParts || 0, tone: (s.lowStockParts || 0) > 0 ? "warn" : "" }
+        ]}
+      />
+
+      <div className="chart-grid">
+        <section className="panel">
+          <DonutChart
+            title="Work order mix"
+            slices={[
+              { label: "New", value: s.createdWorkOrders || 0, color: "#a8a29a" },
+              { label: "Assigned", value: s.assignedWorkOrders || 0, color: "#c4785a" },
+              { label: "In progress", value: s.inProgressWorkOrders || 0, color: "#6b7f5e" },
+              { label: "On hold", value: s.onHoldWorkOrders || 0, color: "#d4a574" },
+              { label: "Completed", value: s.completedWorkOrders || 0, color: "#5c7a5e" }
+            ]}
           />
-        ))}
+        </section>
+        <section className="panel">
+          <SlaGauge percent={s.slaCompliancePercent || 0} />
+        </section>
+      </div>
+
+      <div className="chart-grid">
+        <section className="panel">
+          <BarChart title="Workload by technician" data={s.byTechnician || {}} />
+        </section>
+        <section className="panel">
+          <BarChart title="Workload by site" data={s.bySite || {}} />
+        </section>
       </div>
 
       <section className="panel">
@@ -467,6 +479,7 @@ export default function Dashboard({ user, setPage }) {
               <th>Site</th>
               <th>Status</th>
               <th>Priority</th>
+              <th>SLA</th>
             </tr>
           </thead>
 
@@ -495,6 +508,9 @@ export default function Dashboard({ user, setPage }) {
 
                 <td>
                   {w.priority}
+                </td>
+                <td>
+                  <SlaBadge workOrder={w} />
                 </td>
               </tr>
             ))}

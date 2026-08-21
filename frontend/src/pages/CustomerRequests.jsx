@@ -1,16 +1,8 @@
 import { useEffect, useState } from "react";
-import {
-  createWorkOrder,
-  getSites,
-  getWorkOrders
-} from "../services/commonService";
+import { createWorkOrder, getSites } from "../services/commonService";
 
-import StatusBadge from "../components/StatusBadge";
-
-export default function CustomerReports({ user }) {
-  const [rows, setRows] = useState([]);
+export default function CustomerRequests({ user }) {
   const [sites, setSites] = useState([]);
-
   const [f, setF] = useState({
     title: "",
     description: "",
@@ -18,204 +10,95 @@ export default function CustomerReports({ user }) {
     priority: "MEDIUM"
   });
 
-  const getCustomerId = () => {
-    return user?.customerId || user?.customer?.id || null;
-  };
-
-  const load = () => {
-    getSites().then((r) => {
-      const customerId = getCustomerId();
-
-      if (customerId) {
-        const filteredSites = r.data.filter(
-          (s) => s.customer?.id === customerId || s.customerId === customerId
-        );
-
-        setSites(filteredSites);
-      } else {
-        setSites(r.data);
-      }
-    });
-
-    getWorkOrders().then((r) => {
-      const customerId = getCustomerId();
-
-      if (customerId) {
-        const filteredWorkOrders = r.data.filter(
-          (w) => w.customer?.id === customerId || w.customerId === customerId
-        );
-
-        setRows(filteredWorkOrders);
-      } else {
-        setRows(r.data);
-      }
-    });
-  };
+  const getCustomerId = () => user?.customerId || user?.customer?.id || null;
 
   useEffect(() => {
-    load();
-  }, []);
+    getSites().then((r) => {
+      const customerId = getCustomerId();
+      const data = r.data || [];
+      setSites(
+        customerId
+          ? data.filter((s) => s.customer?.id === customerId || s.customerId === customerId)
+          : data
+      );
+    });
+  }, [user]);
 
   const save = async (e) => {
     e.preventDefault();
+    const selectedSite = sites.find((s) => String(s.id) === String(f.siteId));
+    const customerId =
+      getCustomerId() ||
+      selectedSite?.customer?.id ||
+      selectedSite?.customerId ||
+      null;
 
-    const customerId = getCustomerId();
-
-    if (!customerId) {
-      alert("Customer id is missing for this logged-in user.");
+    if (!f.title || !f.siteId) {
+      alert("Please fill title and site.");
       return;
     }
 
-    if (!f.title || !f.description || !f.siteId) {
-      alert("Please fill all required fields.");
-      return;
+    try {
+      await createWorkOrder({
+        title: f.title,
+        description: f.description,
+        customerId: customerId ? Number(customerId) : undefined,
+        siteId: Number(f.siteId),
+        priority: f.priority || "MEDIUM",
+        createdByUserId: user?.userId
+      });
+      setF({
+        title: "",
+        description: "",
+        siteId: "",
+        priority: "MEDIUM"
+      });
+      alert("Work order request created successfully.");
+    } catch (err) {
+      alert(err.response?.data?.message || "Could not create request.");
     }
-
-    await createWorkOrder({
-      title: f.title,
-      description: f.description,
-      customerId: customerId,
-      siteId: +f.siteId,
-      assignedTechnicianId: null,
-      priority: f.priority,
-      createdByUserId: user?.userId
-    });
-
-    setF({
-      title: "",
-      description: "",
-      siteId: "",
-      priority: "MEDIUM"
-    });
-
-    load();
-
-    alert("Work order request created successfully.");
   };
 
   return (
     <div className="page">
-
       <form className="panel wo-form" onSubmit={save}>
-
         <h2>Create Customer Request</h2>
-
         <p>
           Submit a new service request. Your request will be reviewed and assigned
           to a technician.
         </p>
-
         <input
           placeholder="Request Title"
           value={f.title}
-          onChange={(e) =>
-            setF({
-              ...f,
-              title: e.target.value
-            })
-          }
+          onChange={(e) => setF({ ...f, title: e.target.value })}
         />
-
         <input
           placeholder="Request Description"
           value={f.description}
-          onChange={(e) =>
-            setF({
-              ...f,
-              description: e.target.value
-            })
-          }
+          onChange={(e) => setF({ ...f, description: e.target.value })}
         />
-
         <select
           value={f.siteId}
-          onChange={(e) =>
-            setF({
-              ...f,
-              siteId: e.target.value
-            })
-          }
+          onChange={(e) => setF({ ...f, siteId: e.target.value })}
         >
           <option value="">Select Site</option>
-
           {sites.map((s) => (
             <option key={s.id} value={s.id}>
               {s.siteName}
             </option>
           ))}
         </select>
-
         <select
           value={f.priority}
-          onChange={(e) =>
-            setF({
-              ...f,
-              priority: e.target.value
-            })
-          }
+          onChange={(e) => setF({ ...f, priority: e.target.value })}
         >
           <option value="LOW">LOW</option>
           <option value="MEDIUM">MEDIUM</option>
           <option value="HIGH">HIGH</option>
           <option value="CRITICAL">CRITICAL</option>
         </select>
-
-        <button className="primary">
-          Submit Request
-        </button>
-
+        <button className="primary">Submit Request</button>
       </form>
-
-      <section className="panel">
-
-        <h2>My Work Order Requests</h2>
-
-        <table>
-          <thead>
-            <tr>
-              <th>WO</th>
-              <th>Title</th>
-              <th>Site</th>
-              <th>Priority</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-
-          <tbody>
-
-            {rows.length === 0 && (
-              <tr>
-                <td colSpan="5">
-                  No work order requests found.
-                </td>
-              </tr>
-            )}
-
-            {rows.map((w) => (
-              <tr key={w.id}>
-
-                <td>{w.workOrderNumber || "-"}</td>
-
-                <td>{w.title}</td>
-
-                <td>
-                  {w.site?.siteName || "-"}
-                </td>
-
-                <td>{w.priority}</td>
-
-                <td>
-                  <StatusBadge status={w.status} />
-                </td>
-
-              </tr>
-            ))}
-
-          </tbody>
-        </table>
-
-      </section>
-
     </div>
   );
 }
