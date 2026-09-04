@@ -51,5 +51,20 @@ public class SchemaRepairRunner implements ApplicationRunner {
                 )
                 WHERE wo.created_by_user_id IS NULL
                 """);
+        jdbcTemplate.execute("""
+                UPDATE users u
+                SET customer_id = c.id
+                FROM customers c
+                WHERE u.role = 'CUSTOMER'
+                  AND u.customer_id IS NULL
+                  AND lower(trim(u.full_name)) = lower(trim(c.name))
+                """);
+        jdbcTemplate.execute("ALTER TABLE parts ADD COLUMN IF NOT EXISTS reorder_level integer");
+        jdbcTemplate.execute("UPDATE parts SET reorder_level = 10 WHERE reorder_level IS NULL");
+        jdbcTemplate.execute("ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check");
+        jdbcTemplate.execute("""
+                ALTER TABLE users ADD CONSTRAINT users_role_check
+                CHECK (role IN ('ADMIN','MANAGER','DISPATCHER','TECHNICIAN','CUSTOMER'))
+                """);
     }
 }

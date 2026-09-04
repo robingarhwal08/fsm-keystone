@@ -3,8 +3,11 @@ package com.fsm.keystone.service;
 import com.fsm.keystone.entity.AppUser;
 import com.fsm.keystone.entity.Customer;
 import com.fsm.keystone.entity.Site;
+import com.fsm.keystone.enums.Role;
+import com.fsm.keystone.exception.BusinessException;
 import com.fsm.keystone.repository.CustomerRepository;
 import com.fsm.keystone.repository.SiteRepository;
+import com.fsm.keystone.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +19,7 @@ public class SiteService {
 
     private final SiteRepository siteRepository;
     private final CustomerRepository customerRepository;
+    private final UserRepository userRepository;
     private final CurrentUserService currentUserService;
     private final CascadeDeleteService cascadeDeleteService;
 
@@ -36,23 +40,35 @@ public class SiteService {
     }
 
     public List<Site> getAllSites() {
-        AppUser actor;
-        try {
-            actor = currentUserService.requireUser();
-        } catch (Exception ex) {
-            actor = null;
-        }
-        if (actor != null && actor.getRole() == com.fsm.keystone.enums.Role.CUSTOMER && actor.getCustomer() != null) {
-            return siteRepository.findByCustomerId(actor.getCustomer().getId());
+        AppUser actor = resolveActor();
+        if (actor != null && actor.getRole() == Role.CUSTOMER) {
+            Customer customer = actor.getCustomer();
+            if (customer == null) {
+                return List.of();
+            }
+            return siteRepository.findByCustomerId(customer.getId());
         }
         return siteRepository.findAll();
     }
 
-    public List<Site> getSitesByCustomerId(
-            Long customerId) {
+    public List<Site> getSitesByCustomerId(Long customerId) {
+        AppUser actor = resolveActor();
+        if (actor != null && actor.getRole() == Role.CUSTOMER) {
+            Customer customer = actor.getCustomer();
+            if (customer == null || !customer.getId().equals(customerId)) {
+                throw new BusinessException("You can only view sites for your organisation");
+            }
+        }
+        return siteRepository.findByCustomerId(customerId);
+    }
 
-        return siteRepository.findByCustomerId(
-                customerId);
+    private AppUser resolveActor() {
+        try {
+            AppUser actor = currentUserService.requireUser();
+            return userRepository.findByEmailWithCustomer(actor.getEmail()).orElse(actor);
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     public Site updateSite(

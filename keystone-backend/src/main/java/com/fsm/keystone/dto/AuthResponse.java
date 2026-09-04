@@ -7,5 +7,6 @@ public record AuthResponse(
         String email,
         Role role,
         Long customerId,
-        String customerName
+        String customerName,
+        Boolean pendingApproval
 ) {}

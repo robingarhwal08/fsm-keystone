@@ -15,7 +15,11 @@ public record UpdateUserRequest(
         Role role,
 
         @NotNull(message = "Active status is required")
-        Boolean active
+        Boolean active,
+
+        Long customerId,
+
+        String newPassword
 
 ) {
 }

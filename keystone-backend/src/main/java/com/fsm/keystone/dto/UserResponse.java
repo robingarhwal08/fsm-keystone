@@ -21,6 +21,8 @@ public record UserResponse(
 
         Long customerId,
 
+        String customerName,
+
         LocalDateTime createdAt
 
 ) {
@@ -34,6 +36,7 @@ public record UserResponse(
                 user.getRole(),
                 user.getActive(),
                 user.getCustomer() != null ? user.getCustomer().getId() : null,
+                user.getCustomer() != null ? user.getCustomer().getName() : null,
                 user.getCreatedAt()
         );
     }

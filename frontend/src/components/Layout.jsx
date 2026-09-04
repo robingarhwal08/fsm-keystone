@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { getNotifications, markNotificationRead } from "../services/commonService";
+import { getNotifications, markNotificationRead, markAllNotificationsRead } from "../services/commonService";
 import ThemeToggle from "./ThemeToggle";
 
 import {
@@ -16,7 +16,8 @@ import {
   Clock,
   Wrench,
   Menu,
-  X
+  X,
+  Settings as SettingsIcon
 } from "lucide-react";
 
 export default function Layout({
@@ -33,15 +34,17 @@ export default function Layout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notes, setNotes] = useState([]);
   const [showNotes, setShowNotes] = useState(false);
+  const [markingAllRead, setMarkingAllRead] = useState(false);
   const profileRef = useRef(null);
 
   const notesRef = useRef(null);
 
-  const loadNotes = () => {
+  const isUnread = (note) => note?.readFlag !== true;
+
+  const loadNotes = () =>
     getNotifications()
       .then((r) => setNotes(Array.isArray(r.data) ? r.data : []))
       .catch(() => setNotes([]));
-  };
 
   useEffect(() => {
 
@@ -79,8 +82,15 @@ export default function Layout({
 
   let nav = [];
 
+  // ADMIN — user management only
+  if (role === "ADMIN") {
+    nav = [
+      ["users", "Users", UserCog]
+    ];
+  }
+
   // MANAGER
-  if (role === "MANAGER") {
+  else if (role === "MANAGER") {
     nav = [
       ["dashboard", "Dashboard", Grid2X2],
       ["customers", "Customers", Users],
@@ -130,6 +140,26 @@ export default function Layout({
     ];
   }
 
+  const unreadCount = notes.filter(isUnread).length;
+
+  const handleMarkAllRead = async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const unreadIds = notes.filter(isUnread).map((n) => n.id);
+    if (unreadIds.length === 0 || markingAllRead) return;
+
+    setMarkingAllRead(true);
+    try {
+      await markAllNotificationsRead();
+    } catch {
+      await Promise.allSettled(unreadIds.map((id) => markNotificationRead(id)));
+    }
+    setNotes((prev) => prev.map((n) => ({ ...n, readFlag: true })));
+    await loadNotes();
+    setMarkingAllRead(false);
+  };
+
   return (
     <div className="app-shell">
 
@@ -144,6 +174,7 @@ export default function Layout({
           </b>
         </div>
 
+        <nav className="sidebar-nav">
         {
           nav.map(([id, label, Icon]) => (
             <button
@@ -159,6 +190,7 @@ export default function Layout({
             </button>
           ))
         }
+        </nav>
 
         <button
             onClick={()=>{
@@ -215,19 +247,32 @@ export default function Layout({
               onClick={() => setShowNotes(!showNotes)}
             >
               <Bell size={18} />
-              {notes.filter((n) => !n.readFlag).length > 0 && (
-                <em>{notes.filter((n) => !n.readFlag).length}</em>
+              {unreadCount > 0 && (
+                <em>{unreadCount}</em>
               )}
             </button>
             {showNotes && (
               <div className="notes-menu">
-                <strong className="notes-title">Notifications</strong>
+                <div className="notes-head">
+                  <strong className="notes-title">Notifications</strong>
+                  {unreadCount > 0 && (
+                    <button
+                      type="button"
+                      className="notes-mark-all"
+                      disabled={markingAllRead}
+                      onMouseDown={(event) => event.stopPropagation()}
+                      onClick={handleMarkAllRead}
+                    >
+                      {markingAllRead ? "Marking…" : "Mark all read"}
+                    </button>
+                  )}
+                </div>
                 {notes.length === 0 && <p>No notifications</p>}
                 {notes.slice(0, 12).map((n) => (
                   <button
                     key={n.id}
                     type="button"
-                    className={n.readFlag ? "read" : ""}
+                    className={`notes-item${n.readFlag ? " read" : ""}`}
                     onClick={async () => {
                       await markNotificationRead(n.id);
                       setNotes((prev) => prev.map((x) => x.id === n.id ? { ...x, readFlag: true } : x));
@@ -280,6 +325,19 @@ export default function Layout({
                     </small>
 
                   </div>
+
+                  <button
+                      type="button"
+                      className="profile-settings-btn"
+                      onClick={() => {
+                        setPage("settings");
+                        setShowMenu(false);
+                        setSidebarOpen(false);
+                      }}
+                  >
+                    <SettingsIcon size={16} />
+                    Settings
+                  </button>
 
                   <button
                       onClick={() => {

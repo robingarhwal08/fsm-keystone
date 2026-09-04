@@ -5,12 +5,12 @@ import com.fsm.keystone.dto.AuthResponse;
 import com.fsm.keystone.dto.SignupRequest;
 import com.fsm.keystone.entity.AppUser;
 import com.fsm.keystone.entity.Customer;
+import com.fsm.keystone.enums.Role;
+import com.fsm.keystone.exception.BusinessException;
 import com.fsm.keystone.repository.UserRepository;
 import com.fsm.keystone.repository.CustomerRepository;
 import com.fsm.keystone.security.JwtService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +22,7 @@ public class AuthService {
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final AuthenticationManager authenticationManager;
+    private final NotificationService notificationService;
 
     public AuthResponse signup(SignupRequest req) {
 
@@ -30,9 +30,19 @@ public class AuthService {
             throw new RuntimeException("Email already exists");
         }
 
+        if (req.role() == Role.CUSTOMER && req.customerId() == null) {
+            throw new BusinessException("Customer users must select a customer organisation");
+        }
+
+        if (req.role() == Role.ADMIN) {
+            throw new BusinessException("This role cannot be self-registered");
+        }
+
         Customer customer = req.customerId() == null ? null : customerRepository.findById(req.customerId())
                 .orElseThrow(() ->
                         new RuntimeException("Customer not found"));
+
+        boolean requiresApproval = requiresAdminApproval(req.role());
 
         AppUser user = AppUser.builder()
                 .fullName(req.fullName())
@@ -41,39 +51,41 @@ public class AuthService {
                 .phone(req.phone())
                 .role(req.role())
                 .customer(customer)
-                .active(true)
+                .active(!requiresApproval)
                 .build();
 
         userRepository.save(user);
 
-        String token = jwtService.generateToken(user);
+        if (requiresApproval) {
+            notificationService.notifyAdminsOfSignupRequest(user);
+            return toAuthResponse(user, null, true);
+        }
 
-        return new AuthResponse(
-                token,
-                user.getId(),
-                user.getFullName(),
-                user.getEmail(),
-                user.getRole(),
-                user.getCustomer() != null ? user.getCustomer().getId() : null,
-                user.getCustomer() != null ? user.getCustomer().getName() : null
-        );
+        String token = jwtService.generateToken(user);
+        return toAuthResponse(user, token, false);
     }
 
     public AuthResponse login(AuthRequest req) {
+        AppUser user = userRepository.findByEmailWithCustomer(req.email())
+                .orElseThrow(() -> new BusinessException("Invalid email or password"));
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        req.email(),
-                        req.password()
-                )
-        );
+        if (!passwordEncoder.matches(req.password(), user.getPassword())) {
+            throw new BusinessException("Invalid email or password");
+        }
 
-        AppUser user = userRepository.findByEmail(req.email())
-                .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+        if (!Boolean.TRUE.equals(user.getActive())) {
+            throw new BusinessException("Your account is pending admin approval. Please try again after approval.");
+        }
 
         String token = jwtService.generateToken(user);
+        return toAuthResponse(user, token, false);
+    }
 
+    private boolean requiresAdminApproval(Role role) {
+        return role == Role.MANAGER || role == Role.DISPATCHER || role == Role.TECHNICIAN;
+    }
+
+    private AuthResponse toAuthResponse(AppUser user, String token, boolean pendingApproval) {
         return new AuthResponse(
                 token,
                 user.getId(),
@@ -81,7 +93,8 @@ public class AuthService {
                 user.getEmail(),
                 user.getRole(),
                 user.getCustomer() != null ? user.getCustomer().getId() : null,
-                user.getCustomer() != null ? user.getCustomer().getName() : null
+                user.getCustomer() != null ? user.getCustomer().getName() : null,
+                pendingApproval
         );
     }
 }

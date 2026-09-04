@@ -16,6 +16,11 @@ import {
 import StatusBadge from "../components/StatusBadge";
 import StatusHistoryTable from "../components/StatusHistoryTable";
 import SlaBadge from "../components/SlaBadge";
+import {
+  filterSitesForCustomer,
+  filterWorkOrdersForCustomer,
+  getCustomerId
+} from "../utils/customerScope";
 
 export default function WorkOrders({ user }) {
 
@@ -58,15 +63,7 @@ export default function WorkOrders({ user }) {
      console.log("All Work Orders:", r.data);
 
      if (user?.role === "CUSTOMER") {
-
-       setRows(
-         r.data.filter((w) => {
-           const creatorId = w.createdBy?.id || w.createdByUserId;
-           const uid = user?.userId || user?.id;
-           return uid != null && creatorId != null && String(creatorId) === String(uid);
-         })
-       );
-
+       setRows(filterWorkOrdersForCustomer(r.data || [], user));
      } else if (user?.role === "TECHNICIAN") {
 
        const technicianJobs = r.data.filter(
@@ -93,15 +90,7 @@ export default function WorkOrders({ user }) {
     getSites().then((r) => {
 
       if (user?.role === "CUSTOMER") {
-
-        setSites(
-          r.data.filter(
-            (s) =>
-              s.customer?.id === user.customerId ||
-              s.customerId === user.customerId
-          )
-        );
-
+        setSites(filterSitesForCustomer(r.data || [], user));
       } else {
 
         setSites(r.data);
@@ -399,30 +388,35 @@ export default function WorkOrders({ user }) {
       )}
 
 
-      <section className="panel">
+      <section className="panel wo-list-panel">
 
-        <h2>Work Orders</h2>
-        <input
-          placeholder="Search by code, title, or status"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
+        <div className="panel-head">
+          <h2>Work Orders</h2>
+        </div>
 
-        <table>
-          <thead>
+        <div className="wo-search-wrap">
+          <input
+            className="wo-search"
+            placeholder="Search by code, title, or status"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+
+        <div className="list-table-wrap">
+        <table className="list-table wo-table">          <thead>
             <tr>
-              <th>WO</th>
-              <th>Title</th>
-              <th>Customer</th>
-              <th>Technician</th>
-              <th>Status</th>
-              <th>SLA</th>
-              <th>Action</th>
+              <th className="col-wo">WO</th>
+              <th className="col-title">Title</th>
+              <th className="col-customer">Customer</th>
+              <th className="col-tech">Technician</th>
+              <th className="col-status">Status</th>
+              <th className="col-sla">SLA</th>
+              <th className="col-action">Action</th>
               {(user?.role === "MANAGER" || user?.role === "DISPATCHER") && (
-                <th>Manage</th>
+                <th className="col-actions">Manage</th>
               )}
-            </tr>
-          </thead>
+            </tr>          </thead>
 
          <tbody>
 
@@ -448,8 +442,9 @@ export default function WorkOrders({ user }) {
                 <td>{w.title}</td>
 
                 <td>{w.customer?.name}</td>
-                <td>
+                <td className="col-tech">
                   {(user?.role === "MANAGER" || user?.role === "DISPATCHER") ? (
+                      <div className="table-field">
                       <select
                           value={w.assignedTechnician?.id || ""}
                           onChange={(e) =>
@@ -464,20 +459,22 @@ export default function WorkOrders({ user }) {
                             </option>
                         ))}
                       </select>
+                      </div>
                   ) : (
                       w.assignedTechnician?.fullName || "-"
                   )}
                 </td>
 
-                <td>
+                <td className="col-status">
                   <StatusBadge status={w.status} />
                 </td>
 
-                <td>
+                <td className="col-sla">
                   <SlaBadge workOrder={w} />
                 </td>
 
-                <td>
+                <td className="col-action">
+                  <div className="wo-cell-actions">
                   {user?.role === "TECHNICIAN" ? (
                     <div className="tech-actions">
                       {w.status === "ASSIGNED" && (
@@ -485,7 +482,7 @@ export default function WorkOrders({ user }) {
                       )}
                       {w.status === "IN_PROGRESS" && (
                         <>
-                          <button type="button" className="action-btn" onClick={() => setStatus(w.id, "ON_HOLD")}>Hold</button>
+                          <button type="button" className="action-btn secondary-btn" onClick={() => setStatus(w.id, "ON_HOLD")}>Hold</button>
                           <button type="button" className="action-btn edit-btn" onClick={() => setStatus(w.id, "COMPLETED")}>Complete</button>
                         </>
                       )}
@@ -495,6 +492,7 @@ export default function WorkOrders({ user }) {
                     </div>
                   ) : (
                     <select
+                      className="wo-status-select"
                       value={w.status === "CREATED" ? "NEW" : w.status}
                       disabled={user?.role === "CUSTOMER"}
                       onChange={(e) =>
@@ -510,11 +508,13 @@ export default function WorkOrders({ user }) {
                       <option value="CANCELLED">CANCELLED</option>
                     </select>
                   )}
-                  <button type="button" className="action-btn" onClick={() => openHistory(w)}>History</button>
+                  <button type="button" className="action-btn secondary-btn" onClick={() => openHistory(w)}>History</button>
+                  </div>
                 </td>
 
                 {(user?.role === "MANAGER" || user?.role === "DISPATCHER") && (
-                  <td>
+                  <td className="table-actions-cell">
+                    <div className="table-actions">
                     <button
                         type="button"
                         className="action-btn edit-btn"
@@ -530,17 +530,17 @@ export default function WorkOrders({ user }) {
                     >
                       Delete
                     </button>
+                    </div>
                   </td>
                 )}
-
               </tr>
             ))}
 
           </tbody>
         </table>
+        </div>
 
-        {historyWorkOrder && (
-          <StatusHistoryTable
+        {historyWorkOrder && (          <StatusHistoryTable
             rows={history}
             workOrderNumber={historyWorkOrder.workOrderNumber}
             title={historyWorkOrder.title}

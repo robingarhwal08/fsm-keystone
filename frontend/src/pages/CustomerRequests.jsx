@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
 import { createWorkOrder, getSites } from "../services/commonService";
+import {
+  filterSitesForCustomer,
+  getCustomerId
+} from "../utils/customerScope";
 
 export default function CustomerRequests({ user }) {
   const [sites, setSites] = useState([]);
@@ -10,17 +14,11 @@ export default function CustomerRequests({ user }) {
     priority: "MEDIUM"
   });
 
-  const getCustomerId = () => user?.customerId || user?.customer?.id || null;
+  const customerId = getCustomerId(user);
 
   useEffect(() => {
     getSites().then((r) => {
-      const customerId = getCustomerId();
-      const data = r.data || [];
-      setSites(
-        customerId
-          ? data.filter((s) => s.customer?.id === customerId || s.customerId === customerId)
-          : data
-      );
+      setSites(filterSitesForCustomer(r.data || [], user));
     });
   }, [user]);
 
@@ -28,7 +26,7 @@ export default function CustomerRequests({ user }) {
     e.preventDefault();
     const selectedSite = sites.find((s) => String(s.id) === String(f.siteId));
     const customerId =
-      getCustomerId() ||
+      getCustomerId(user) ||
       selectedSite?.customer?.id ||
       selectedSite?.customerId ||
       null;
@@ -67,6 +65,11 @@ export default function CustomerRequests({ user }) {
           Submit a new service request. Your request will be reviewed and assigned
           to a technician.
         </p>
+        {!customerId && (
+          <p className="error">
+            Your account is not linked to a customer organisation. Contact your manager.
+          </p>
+        )}
         <input
           placeholder="Request Title"
           value={f.title}
@@ -80,6 +83,7 @@ export default function CustomerRequests({ user }) {
         <select
           value={f.siteId}
           onChange={(e) => setF({ ...f, siteId: e.target.value })}
+          disabled={!customerId}
         >
           <option value="">Select Site</option>
           {sites.map((s) => (

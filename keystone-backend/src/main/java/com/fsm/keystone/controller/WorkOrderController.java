@@ -4,10 +4,10 @@ import com.fsm.keystone.dto.AssignTechnicianRequest;
 import com.fsm.keystone.dto.CreateWorkOrderRequest;
 import com.fsm.keystone.dto.PartUsageRequest;
 import com.fsm.keystone.dto.StatusUpdateRequest;
-import com.fsm.keystone.dto.TimeLogRequest;
-import com.fsm.keystone.entity.PartUsage;
 import com.fsm.keystone.dto.StatusHistoryResponse;
-import com.fsm.keystone.entity.TimeLog;
+import com.fsm.keystone.dto.TimeLogRequest;
+import com.fsm.keystone.dto.TimeLogResponse;
+import com.fsm.keystone.entity.PartUsage;
 import com.fsm.keystone.entity.WorkOrder;
 import com.fsm.keystone.service.WorkOrderService;
 import jakarta.validation.Valid;
@@ -78,7 +78,7 @@ public class WorkOrderController {
 
     @PostMapping({"/{id}/time-logs", "/{id}/time"})
     @PreAuthorize("hasAnyRole('MANAGER','DISPATCHER','TECHNICIAN')")
-    public TimeLog addTime(
+    public TimeLogResponse addTime(
             @PathVariable Long id,
             @RequestBody TimeLogRequest req) {
         return workOrderService.addTimeLog(id, req);

@@ -22,13 +22,26 @@ import TimeLogs from "./pages/TimeLogs";
 import PartUsage from "./pages/PartUsage";
 
 import Users from "./pages/Users";
+import Settings from "./pages/Settings";
+
+const getInitialPage = () => {
+    if (!localStorage.getItem("token")) {
+        return "login";
+    }
+
+    const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+    if (storedUser?.role === "ADMIN") {
+        return "users";
+    }
+
+    return "dashboard";
+};
+
+const ADMIN_PAGES = new Set(["users", "settings"]);
+
 export default function App() {
 
-    const [page, setPage] = useState(
-        localStorage.getItem("token")
-            ? "dashboard"
-            : "login"
-    );
+    const [page, setPage] = useState(getInitialPage);
 
     const [user, setUser] = useState(
         JSON.parse(localStorage.getItem("user") || "null")
@@ -44,8 +57,22 @@ export default function App() {
         }
     }, [page, theme]);
 
+    useEffect(() => {
+        if (user?.role === "ADMIN" && !ADMIN_PAGES.has(page)) {
+            setPage("users");
+        }
+    }, [user, page]);
+
     const toggleTheme = () => {
         setTheme((prev) => applyTheme(prev === "dark" ? "light" : "dark"));
+    };
+
+    const updateProfile = (updates) => {
+        setUser((prev) => {
+            const next = { ...prev, ...updates };
+            localStorage.setItem("user", JSON.stringify(next));
+            return next;
+        });
     };
 
     const logout = () => {
@@ -66,7 +93,7 @@ export default function App() {
 
                     setUser(u);
 
-                    setPage("dashboard");
+                    setPage(u.role === "ADMIN" ? "users" : "dashboard");
 
                 }}
                 goSignup={() => setPage("signup")}
@@ -91,6 +118,9 @@ export default function App() {
     }
 
     const renderPage = () => {
+        if (user?.role === "ADMIN" && page === "dashboard") {
+            return <Users user={user} />;
+        }
 
         switch (page) {
 
@@ -109,7 +139,7 @@ export default function App() {
                 );
 
             case "users":
-                return <Users />;
+                return <Users user={user} />;
 
             case "timelogs":
                 return (
@@ -163,6 +193,14 @@ export default function App() {
                     <CustomerSites />
                 );
 
+            case "settings":
+                return (
+                    <Settings
+                        user={user}
+                        onProfileUpdated={updateProfile}
+                    />
+                );
+
             case "reports":
                 return (
                     <CustomerReports
@@ -171,6 +209,9 @@ export default function App() {
                 );
 
             default:
+                if (user?.role === "ADMIN") {
+                    return <Users user={user} />;
+                }
                 return (
                     <Dashboard
                         user={user}

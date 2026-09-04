@@ -12,13 +12,16 @@ export default function Customers() {
     const [rows, setRows] = useState([]);
 
     const [editingId, setEditingId] = useState(null);
+    const [showForm, setShowForm] = useState(false);
 
-    const [form, setForm] = useState({
+    const emptyForm = {
         name: "",
         email: "",
         phone: "",
         billingAddress: ""
-    });
+    };
+
+    const [form, setForm] = useState(emptyForm);
 
     const loadCustomers = async () => {
 
@@ -63,14 +66,10 @@ export default function Customers() {
 
             }
 
-            setForm({
-                name: "",
-                email: "",
-                phone: "",
-                billingAddress: ""
-            });
+            setForm(emptyForm);
 
             setEditingId(null);
+            setShowForm(false);
 
             loadCustomers();
 
@@ -82,6 +81,7 @@ export default function Customers() {
     const editCustomer = (customer) => {
 
         setEditingId(customer.id);
+        setShowForm(true);
 
         setForm({
             name: customer.name || "",
@@ -120,19 +120,19 @@ export default function Customers() {
         }
     };
 
+    const resetForm = () => {
+        setEditingId(null);
+        setShowForm(false);
+        setForm(emptyForm);
+    };
+
    return (
 
-       <div
-           className="page"
-           style={{
-               display: "flex",
-               flexDirection: "column",
-               gap: "24px"
-           }}
-       >
+       <div className="page page-stack">
 
             {/* CUSTOMER FORM */}
 
+            {(showForm || editingId) && (
             <form
                 className="panel"
                 onSubmit={saveCustomer}
@@ -142,7 +142,7 @@ export default function Customers() {
                     {
                         editingId
                             ? "Edit Customer"
-                            : "Create Customer"
+                            : "Add Customer"
                     }
                 </h2>
 
@@ -194,6 +194,7 @@ export default function Customers() {
                     }
                 />
 
+                <div style={{ display: "flex", gap: "10px" }}>
                 <button
                     type="submit"
                     className="primary"
@@ -205,53 +206,53 @@ export default function Customers() {
                     }
                 </button>
 
-                {
-                    editingId && (
-                       <button
-                           type="button"
-                           style={{marginLeft: "10px"}}
-                           className="action-btn cancel-btn"
-                           onClick={() => {
-                               setEditingId(null);
-
-                               setForm({
-                                   name: "",
-                                   email: "",
-                                   phone: "",
-                                   billingAddress: ""
-                               });
-                           }}
-                       >
-                           Cancel
-                       </button>
-                    )
-                }
+                <button
+                    type="button"
+                    className="action-btn cancel-btn"
+                    onClick={resetForm}
+                >
+                    Cancel
+                </button>
+                </div>
 
             </form>
+            )}
 
             {/* CUSTOMER LIST */}
 
             <section className="panel">
 
+                <div className="panel-head">
                 <h2>
                     Customer List
                 </h2>
+                {!showForm && !editingId && (
+                    <button
+                        type="button"
+                        className="primary"
+                        onClick={() => setShowForm(true)}
+                    >
+                        New Customer
+                    </button>
+                )}
+                </div>
 
-                <table>
+                <div className="list-table-wrap">
+                <table className="list-table">
 
                     <thead>
 
                         <tr>
 
-                            <th>Name</th>
+                            <th className="col-name">Name</th>
 
-                            <th>Email</th>
+                            <th className="col-email">Email</th>
 
-                            <th>Phone</th>
+                            <th className="col-phone">Phone</th>
 
                             <th>Billing Address</th>
 
-                            <th>Actions</th>
+                            <th className="col-actions">Actions</th>
 
                         </tr>
 
@@ -301,8 +302,8 @@ export default function Customers() {
                                         }
                                     </td>
 
-                                    <td>
-
+                                    <td className="table-actions-cell">
+                                        <div className="table-actions">
                                         <button
                                             type="button"
                                             className="action-btn edit-btn"
@@ -318,7 +319,7 @@ export default function Customers() {
                                        >
                                            Delete
                                        </button>
-
+                                        </div>
                                     </td>
 
                                 </tr>
@@ -330,6 +331,7 @@ export default function Customers() {
                     </tbody>
 
                 </table>
+                </div>
 
             </section>
 

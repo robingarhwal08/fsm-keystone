@@ -4,6 +4,7 @@ import StatusBadge from "../components/StatusBadge";
 import StatusTimeline from "../components/StatusTimeline";
 import SlaBadge from "../components/SlaBadge";
 import { downloadRequestReport } from "../utils/requestReport";
+import { filterWorkOrdersForCustomer } from "../utils/customerScope";
 
 export default function CustomerReports({ user }) {
   const [rows, setRows] = useState([]);
@@ -12,12 +13,7 @@ export default function CustomerReports({ user }) {
 
   const load = () => {
     getWorkOrders().then((r) => {
-      const data = r.data || [];
-      setRows(data.filter((w) => {
-        const creatorId = w.createdBy?.id || w.createdByUserId;
-        const uid = user?.userId || user?.id;
-        return uid != null && creatorId != null && String(creatorId) === String(uid);
-      }));
+      setRows(filterWorkOrdersForCustomer(r.data || [], user));
     });
   };
 

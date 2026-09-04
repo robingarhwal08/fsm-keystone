@@ -25,7 +25,7 @@ export default function Login({ onLogin, goSignup }) {
       onLogin(data);
 
     } catch (x) {
-      setErr("Login failed. Check your email/password.");
+      setErr(x.response?.data?.message || "Login failed. Check your email/password.");
     }
   };
 
