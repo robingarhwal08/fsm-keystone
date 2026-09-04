@@ -40,6 +40,7 @@ public class PartService {
         part.setDescription(input.getDescription());
         part.setUnitPrice(input.getUnitPrice());
         part.setStockQuantity(input.getStockQuantity());
+        part.setReorderLevel(input.getReorderLevel());
         part.setActive(input.getActive());
 
         return partRepository.save(part);

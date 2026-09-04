@@ -31,8 +31,22 @@ export const deleteSite = (id) =>
  export const deleteWorkOrder = (id) =>
    api.delete(`/work-orders/${id}`);
 
- export const createTimeLog = (data) =>
-     api.post("/time-logs", data);
+ export const createTimeLog = (data, images = []) => {
+   if (!images.length) {
+     return api.post("/time-logs", data);
+   }
+
+   const formData = new FormData();
+   formData.append("workOrderId", String(data.workOrderId));
+   formData.append("technicianId", String(data.technicianId));
+   formData.append("startTime", data.startTime);
+   formData.append("endTime", data.endTime);
+   if (data.workDescription) {
+     formData.append("workDescription", data.workDescription);
+   }
+   images.forEach((file) => formData.append("images", file));
+   return api.post("/time-logs", formData);
+ };
 
 export const getTimeLogs = () => api.get("/time-logs");
 
@@ -52,8 +66,14 @@ export const confirmPartUsage = (id) => api.patch(`/part-usage/${id}/confirm`);
 export const getUsers = () =>
     api.get("/users");
 
+export const createUser = (data) =>
+    api.post("/users", data);
+
 export const updateUser = (id, data) =>
     api.put(`/users/${id}`, data);
+
+export const approveUser = (id) =>
+    api.patch(`/users/${id}/approve`);
 
 export const deleteUser = (id) =>
     api.delete(`/users/${id}`);
@@ -65,4 +85,5 @@ export const getWorkOrderBoard = () => api.get("/work-orders/board");
 export const getWorkOrderHistory = (id) => api.get(`/work-orders/${id}/history`);
 export const getNotifications = () => api.get("/notifications");
 export const markNotificationRead = (id) => api.patch(`/notifications/${id}/read`);
+export const markAllNotificationsRead = () => api.patch("/notifications/read-all", {});
 export const reportsSummary = () => api.get("/reports/summary");

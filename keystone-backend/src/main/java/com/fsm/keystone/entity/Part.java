@@ -28,6 +28,8 @@ public class Part {
 
     private Integer stockQuantity;
 
+    private Integer reorderLevel;
+
     private Boolean active;
 
     @PrePersist
@@ -35,5 +37,13 @@ public class Part {
         if(active==null) active=true;
         if(stockQuantity==null)
             stockQuantity=0;
+        if(reorderLevel==null)
+            reorderLevel=10;
+    }
+
+    public boolean isLowStock() {
+        int level = reorderLevel != null ? reorderLevel : 10;
+        int stock = stockQuantity != null ? stockQuantity : 0;
+        return Boolean.TRUE.equals(active) && stock <= level;
     }
 }

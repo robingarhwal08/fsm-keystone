@@ -2,6 +2,7 @@ package com.fsm.keystone.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record TimeLogResponse(
         Long id,
@@ -13,6 +14,7 @@ public record TimeLogResponse(
         LocalDateTime endTime,
         BigDecimal hoursSpent,
         Integer minutesSpent,
-        String workDescription
+        String workDescription,
+        List<TimeLogPhotoResponse> photos
 ) {
 }

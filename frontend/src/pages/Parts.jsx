@@ -11,7 +11,14 @@ const emptyForm = {
     description: "",
     unitPrice: "",
     stockQuantity: "",
+    reorderLevel: "10",
     active: true
+};
+
+const isLowStock = (part) => {
+    const stock = Number(part.stockQuantity ?? 0);
+    const reorder = Number(part.reorderLevel ?? 10);
+    return part.active !== false && stock <= reorder;
 };
 
 export default function Parts({ user }) {
@@ -39,6 +46,7 @@ export default function Parts({ user }) {
           description: f.description,
           unitPrice: Number(f.unitPrice),
           stockQuantity: Number(f.stockQuantity),
+          reorderLevel: Number(f.reorderLevel),
           active: f.active
       };
       if (editingId) {
@@ -64,6 +72,7 @@ const editPart = (part) => {
         description: part.description || "",
         unitPrice: part.unitPrice ?? "",
         stockQuantity: part.stockQuantity ?? "",
+        reorderLevel: part.reorderLevel ?? 10,
         active: part.active
     });
 
@@ -144,6 +153,16 @@ const removePart = async (id) => {
           required
         />
 
+        <input
+          type="number"
+          min="0"
+          step="1"
+          placeholder="Reorder level (low stock alert)"
+          value={f.reorderLevel}
+          onChange={e => setF({ ...f, reorderLevel: e.target.value })}
+          required
+        />
+
         <button
             className="primary"
             type="submit"
@@ -165,13 +184,14 @@ const removePart = async (id) => {
               <th>No</th>
               <th>Price</th>
               <th>Stock</th>
+              <th>Reorder level</th>
               {canManage && <th>Actions</th>}
             </tr>
           </thead>
 
           <tbody>
             {rows.map(p =>
-              <tr key={p.id}>
+              <tr key={p.id} className={isLowStock(p) ? "low-stock-row" : ""}>
 
                   <td>{p.partName}</td>
 
@@ -179,7 +199,16 @@ const removePart = async (id) => {
 
                   <td>{p.unitPrice}</td>
 
-                  <td>{p.stockQuantity}</td>
+                  <td>
+                    {p.stockQuantity}
+                    {isLowStock(p) && (
+                      <span className="badge AT_RISK" style={{ marginLeft: 8 }}>
+                        Low stock
+                      </span>
+                    )}
+                  </td>
+
+                  <td>{p.reorderLevel ?? 10}</td>
 
                   {canManage && (
                   <td>

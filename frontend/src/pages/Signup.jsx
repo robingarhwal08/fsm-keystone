@@ -9,13 +9,14 @@ export default function Signup({ onSignup, goLogin }) {
     email: "",
     password: "",
     phone: "",
-    role: "MANAGER",
+    role: "DISPATCHER",
     customerId: ""
   });
 
   const [showPassword, setShowPassword] = useState(false);
 
   const [err, setErr] = useState("");
+  const [success, setSuccess] = useState("");
   const [customers, setCustomers] = useState([]);
   useEffect(() => {
     getSignupCustomers()
@@ -30,9 +31,22 @@ export default function Signup({ onSignup, goLogin }) {
   const submit = async (e) => {
     e.preventDefault();
     setErr("");
+    setSuccess("");
+
+    if (form.role === "CUSTOMER" && !form.customerId) {
+      setErr("Please select the customer organisation you belong to.");
+      return;
+    }
 
     try {
       const { data } = await signup(form);
+
+      if (data.pendingApproval) {
+        setSuccess(
+          "Your account was submitted for admin approval. You can log in after an admin approves your request."
+        );
+        return;
+      }
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data));
@@ -40,7 +54,7 @@ export default function Signup({ onSignup, goLogin }) {
       onSignup(data);
 
     } catch (x) {
-      setErr("Signup failed. Email may already exist.");
+      setErr(x.response?.data?.message || "Signup failed. Email may already exist.");
     }
   };
 
@@ -57,11 +71,12 @@ export default function Signup({ onSignup, goLogin }) {
 
         <h1>Create account</h1>
         <p>
-          Create your FSM Keystone account to manage work orders, sites, and customers.
+          Manager, dispatcher, and technician accounts require admin approval before login.
         </p>
 
 
         {err && <div className="error">{err}</div>}
+        {success && <div className="settings-message ok">{success}</div>}
 
         <input
           placeholder="Full name"
@@ -117,10 +132,10 @@ export default function Signup({ onSignup, goLogin }) {
             role: e.target.value
           })}
         >
-          <option>MANAGER</option>
-          <option>DISPATCHER</option>
-          <option>TECHNICIAN</option>
-          <option>CUSTOMER</option>
+          <option value="MANAGER">MANAGER</option>
+          <option value="DISPATCHER">DISPATCHER</option>
+          <option value="TECHNICIAN">TECHNICIAN</option>
+          <option value="CUSTOMER">CUSTOMER</option>
         </select>
         {
           form.role === "CUSTOMER" && (

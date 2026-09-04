@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DashboardService {
 
+    private static final int DEFAULT_REORDER_LEVEL = 10;
+
     private final WorkOrderRepository workRepo;
     private final UserRepository userRepo;
     private final PartRepository partRepo;
@@ -102,7 +104,20 @@ public class DashboardService {
                 ));
 
         data.put("lowStockParts",
-                partRepo.countByStockQuantityLessThanEqual(5));
+                partRepo.countLowStockParts(DEFAULT_REORDER_LEVEL));
+
+        data.put("lowStockPartItems",
+                partRepo.findLowStockParts(DEFAULT_REORDER_LEVEL).stream()
+                        .map(part -> {
+                            Map<String, Object> item = new LinkedHashMap<>();
+                            item.put("id", part.getId());
+                            item.put("partName", part.getPartName());
+                            item.put("partNumber", part.getPartNumber() != null ? part.getPartNumber() : "");
+                            item.put("stockQuantity", part.getStockQuantity() != null ? part.getStockQuantity() : 0);
+                            item.put("reorderLevel", part.getReorderLevel() != null ? part.getReorderLevel() : DEFAULT_REORDER_LEVEL);
+                            return item;
+                        })
+                        .toList());
 
         data.put("recentWorkOrders",
                 workRepo.findTop8ByOrderByCreatedAtDesc());

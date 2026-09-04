@@ -19,6 +19,11 @@ public class NotificationController {
         return notificationService.myNotifications();
     }
 
+    @PatchMapping("/read-all")
+    public int markAllRead() {
+        return notificationService.markAllRead();
+    }
+
     @PatchMapping("/{id}/read")
     public NotificationResponse markRead(@PathVariable Long id) {
         return notificationService.markRead(id);

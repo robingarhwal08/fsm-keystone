@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "time_logs")
@@ -35,4 +37,8 @@ public class TimeLog {
     @ManyToOne(optional = false)
     @JoinColumn(name = "technician_id") // many time logs can by updated by one techician or user
     private AppUser technician;
+
+    @OneToMany(mappedBy = "timeLog", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<TimeLogPhoto> photos = new ArrayList<>();
 }

@@ -33,6 +33,7 @@ import com.fsm.keystone.repository.WorkOrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -56,6 +57,7 @@ public class WorkOrderService {
     private final PartRepository partRepo;
     private final PartUsageRepository partUsageRepo;
     private final TimeLogRepository timeLogRepo;
+    private final TimeLogPhotoService timeLogPhotoService;
     private final CurrentUserService currentUserService;
     private final NotificationService notificationService;
     private final SlaService slaService;
@@ -150,7 +152,12 @@ public class WorkOrderService {
         if (actor != null && actor.getRole() == Role.TECHNICIAN) {
             list = workRepo.findByAssignedTechnician_Id(actor.getId());
         } else if (actor != null && actor.getRole() == Role.CUSTOMER) {
-            list = workRepo.findByCreatedBy_Id(actor.getId());
+            AppUser customerUser = userRepo.findByEmailWithCustomer(actor.getEmail()).orElse(actor);
+            if (customerUser.getCustomer() != null) {
+                list = workRepo.findByCustomer_Id(customerUser.getCustomer().getId());
+            } else {
+                list = workRepo.findByCreatedBy_Id(actor.getId());
+            }
         } else {
             list = workRepo.findAll();
         }
@@ -419,7 +426,7 @@ public class WorkOrderService {
     }
 
     @Transactional
-    public TimeLog addTimeLog(Long id, TimeLogRequest req) {
+    public TimeLogResponse addTimeLog(Long id, TimeLogRequest req, List<MultipartFile> images) {
         WorkOrder workOrder = getWorkOrderById(id);
         assertEditable(workOrder);
         assertTechnicianMayLog(workOrder);
@@ -450,10 +457,34 @@ public class WorkOrderService {
                 .build();
 
         TimeLog saved = timeLogRepo.save(timeLog);
+        timeLogPhotoService.attachPhotos(saved, images);
+
         int total = workOrder.getTotalMinutes() == null ? 0 : workOrder.getTotalMinutes();
         workOrder.setTotalMinutes(total + minutes);
         workRepo.save(workOrder);
-        return saved;
+
+        return toTimeLogResponse(timeLogRepo.findByIdWithDetails(saved.getId()).orElse(saved));
+    }
+
+    @Transactional
+    public TimeLogResponse addTimeLog(Long id, TimeLogRequest req) {
+        return addTimeLog(id, req, List.of());
+    }
+
+    private TimeLogResponse toTimeLogResponse(TimeLog log) {
+        return new TimeLogResponse(
+                log.getId(),
+                log.getWorkOrder() == null ? null : log.getWorkOrder().getId(),
+                log.getWorkOrder() == null ? null : log.getWorkOrder().getWorkOrderNumber(),
+                log.getWorkOrder() == null ? null : log.getWorkOrder().getTitle(),
+                log.getTechnician() == null ? null : log.getTechnician().getFullName(),
+                log.getStartTime(),
+                log.getEndTime(),
+                log.getHoursSpent(),
+                log.getMinutesSpent(),
+                log.getWorkDescription(),
+                timeLogPhotoService.mapPhotos(log.getPhotos())
+        );
     }
 
     @Transactional(readOnly = true)
@@ -465,18 +496,7 @@ public class WorkOrderService {
         } else {
             logs = timeLogRepo.findAllWithDetails();
         }
-        return logs.stream().map(log -> new TimeLogResponse(
-                log.getId(),
-                log.getWorkOrder() == null ? null : log.getWorkOrder().getId(),
-                log.getWorkOrder() == null ? null : log.getWorkOrder().getWorkOrderNumber(),
-                log.getWorkOrder() == null ? null : log.getWorkOrder().getTitle(),
-                log.getTechnician() == null ? null : log.getTechnician().getFullName(),
-                log.getStartTime(),
-                log.getEndTime(),
-                log.getHoursSpent(),
-                log.getMinutesSpent(),
-                log.getWorkDescription()
-        )).toList();
+        return logs.stream().map(this::toTimeLogResponse).toList();
     }
 
     @Transactional

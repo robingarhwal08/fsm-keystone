@@ -1,4 +1,17 @@
 import { useEffect, useState } from "react";
+import {
+  AlertTriangle,
+  Building2,
+  CalendarClock,
+  ClipboardList,
+  Clock3,
+  FileText,
+  LayoutDashboard,
+  MapPin,
+  Package,
+  Users,
+  Wrench
+} from "lucide-react";
 
 import {
   dashboardSummary,
@@ -8,7 +21,70 @@ import {
 
 import StatusBadge from "../components/StatusBadge";
 import SlaBadge from "../components/SlaBadge";
-import { AlertPills, BarChart, DonutChart, SlaGauge } from "../components/DashboardCharts";
+import DashboardShell from "../components/DashboardShell";
+import {
+  BarChart,
+  DashboardPanel,
+  DonutChart,
+  SlaGauge,
+  StatCards
+} from "../components/DashboardCharts";
+import {
+  filterSitesForCustomer,
+  filterWorkOrdersForCustomer
+} from "../utils/customerScope";
+import {
+  JOB_BREAKDOWN_SLICES,
+  STATUS_COLORS,
+  STATUS_GRADIENTS,
+  WORK_ORDER_MIX,
+  sliceWithGradient,
+  withStatTheme
+} from "../utils/chartPalette";
+
+function buildMixSlices(summary, includeOnHold = false) {
+  return WORK_ORDER_MIX.filter((item) => includeOnHold || item.key !== "onHoldWorkOrders").map(
+    (item) => ({
+      label: item.label,
+      value: summary[item.key] || 0,
+      color: item.color,
+      gradient: item.gradient
+    })
+  );
+}
+
+function WorkOrderTable({ rows, columns, emptyMessage }) {
+  if (!rows.length) {
+    return (
+      <div className="chart-empty-state">
+        <p className="chart-empty">{emptyMessage}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="dash-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            {columns.map((col) => (
+              <th key={col.key}>{col.label}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.id}>
+              {columns.map((col) => (
+                <td key={col.key}>{col.render(row)}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 export default function Dashboard({ user, setPage }) {
   const [s, setS] = useState({});
@@ -34,77 +110,61 @@ export default function Dashboard({ user, setPage }) {
       return;
     }
 
-    if (
-      user?.role === "MANAGER" ||
-      user?.role === "DISPATCHER"
-    ) {
+    if (user?.role === "MANAGER" || user?.role === "DISPATCHER") {
       dashboardSummary()
         .then((r) => setS(r.data))
         .catch(() => {});
     }
 
     if (user?.role === "CUSTOMER") {
-      Promise.all([
-        getWorkOrders(),
-        getSites()
-      ]).then(([woRes, siteRes]) => {
-        const workOrders = woRes.data || [];
-        const sites = siteRes.data || [];
+      Promise.all([getWorkOrders(), getSites()])
+        .then(([woRes, siteRes]) => {
+          const workOrders = filterWorkOrdersForCustomer(woRes.data || [], user);
+          const sites = filterSitesForCustomer(siteRes.data || [], user);
 
-        const byStatus = {};
-        const byAssignee = {};
-        workOrders.forEach((w) => {
-          const status = w.status || "NEW";
-          byStatus[status] = (byStatus[status] || 0) + 1;
-          const assignee =
-            w.assignedTechnician?.fullName ||
-            w.assignedTechnician?.name ||
-            "Unassigned";
-          byAssignee[assignee] = (byAssignee[assignee] || 0) + 1;
-        });
+          const byStatus = {};
+          const byAssignee = {};
+          workOrders.forEach((w) => {
+            const status = w.status || "NEW";
+            byStatus[status] = (byStatus[status] || 0) + 1;
+            const assignee =
+              w.assignedTechnician?.fullName ||
+              w.assignedTechnician?.name ||
+              "Unassigned";
+            byAssignee[assignee] = (byAssignee[assignee] || 0) + 1;
+          });
 
-        setCustomerStats({
-          total: workOrders.length,
-          sites: sites.length,
-          byStatus,
-          byAssignee,
-          requests: workOrders
-        });
-      }).catch(() => {});
+          setCustomerStats({
+            total: workOrders.length,
+            sites: sites.length,
+            byStatus,
+            byAssignee,
+            requests: workOrders
+          });
+        })
+        .catch(() => {});
     }
 
     if (user?.role === "TECHNICIAN") {
       getWorkOrders()
         .then((woRes) => {
           const technicianId = user.userId;
-
-          const technicianJobs = woRes.data.filter(
+          const technicianJobs = (woRes.data || []).filter(
             (w) =>
               w.assignedTechnician?.id === technicianId ||
               w.assignedTechnicianId === technicianId ||
               w.technicianId === technicianId
           );
 
-          console.log("Logged In Technician:", user);
-          console.log("All Work Orders:", woRes.data);
-          console.log("Technician Jobs:", technicianJobs);
-
           setTechnicianStats({
             jobs: technicianJobs.length,
-
-            inProgress: technicianJobs.filter(
-              (w) => w.status === "IN_PROGRESS"
-            ).length,
-
+            inProgress: technicianJobs.filter((w) => w.status === "IN_PROGRESS").length,
             completed: technicianJobs.filter(
-              (w) =>
-                w.status === "COMPLETED" ||
-                w.status === "CLOSED"
+              (w) => w.status === "COMPLETED" || w.status === "CLOSED"
             ).length,
-
-            hoursLogged: technicianJobs.reduce((sum, w) => sum + (w.totalMinutes || 0), 0) / 60,
-
-            recentJobs: technicianJobs
+            hoursLogged:
+              technicianJobs.reduce((sum, w) => sum + (w.totalMinutes || 0), 0) / 60,
+            recentJobs: technicianJobs.slice(0, 8)
           });
         })
         .catch(() => {});
@@ -112,411 +172,443 @@ export default function Dashboard({ user, setPage }) {
   }, [user]);
 
   const role = user?.role;
-
-  // ======================================================
-  // TECHNICIAN DASHBOARD
-  // ======================================================
+  const firstName = user?.fullName?.split(" ")?.[0] || "there";
 
   if (role === "TECHNICIAN") {
+    const pendingJobs = Math.max(
+      0,
+      technicianStats.jobs - technicianStats.inProgress - technicianStats.completed
+    );
+
     return (
-      <div className="page">
-        <section className="hero">
-          <div className="radio-box">
-            🔧
-          </div>
-
-          <div>
-            <p className="live">
-              TECHNICIAN WORKSPACE
-            </p>
-
-            <h1>
-              Manage your assigned jobs
-            </h1>
-
-            <p>
-              View assigned work orders, update status,
-              add time logs and track completed jobs.
-            </p>
-          </div>
-
-
-        </section>
+      <DashboardShell
+        themeKey="manager"
+        eyebrow="Technician workspace"
+        title={`Good to see you, ${firstName}`}
+        subtitle="Track assigned jobs, update progress, and log time from one clear view."
+        icon={Wrench}
+        action={
+          <button className="dash-btn" type="button" onClick={() => setPage("workorders")}>
+            View my jobs
+          </button>
+        }
+      >
+        <StatCards
+          items={withStatTheme([
+            {
+              label: "Assigned jobs",
+              value: technicianStats.jobs,
+              icon: <ClipboardList size={20} />,
+              tone: "accent"
+            },
+            {
+              label: "In progress",
+              value: technicianStats.inProgress,
+              icon: <Wrench size={20} />
+            },
+            {
+              label: "Completed",
+              value: technicianStats.completed,
+              icon: <FileText size={20} />
+            },
+            {
+              label: "Hours logged",
+              value: Number(technicianStats.hoursLogged || 0).toFixed(1),
+              icon: <Clock3 size={20} />,
+              hint: "Across assigned work orders"
+            }
+          ])}
+        />
 
         <div className="chart-grid">
-          <section className="panel">
+          <section className="panel dash-panel">
             <DonutChart
-              title="My jobs"
+              title="Job breakdown"
+              subtitle="Where your workload stands today"
               slices={[
-                { label: "In progress", value: technicianStats.inProgress, color: "#c4785a" },
-                { label: "Completed", value: technicianStats.completed, color: "#5c7a5e" },
-                {
-                  label: "Other",
-                  value: Math.max(
-                    0,
-                    technicianStats.jobs - technicianStats.inProgress - technicianStats.completed
-                  ),
-                  color: "#7d8f6e"
-                }
+                sliceWithGradient(JOB_BREAKDOWN_SLICES.inProgress, technicianStats.inProgress),
+                sliceWithGradient(JOB_BREAKDOWN_SLICES.completed, technicianStats.completed),
+                sliceWithGradient(JOB_BREAKDOWN_SLICES.pending, pendingJobs)
               ]}
             />
           </section>
-          <section className="panel">
-            <h2>Hours logged</h2>
-            <p className="chart-empty">Total hours on assigned jobs</p>
-            <h2 style={{ fontSize: 42, margin: "18px 0 0" }}>
+          <section className="panel dash-panel dash-highlight-card dash-highlight-hours">
+            <h2>Field hours</h2>
+            <p className="chart-subtitle">Total time recorded on your assigned jobs</p>
+            <p className="dash-highlight-value">
               {Number(technicianStats.hoursLogged || 0).toFixed(1)}
-            </h2>
+            </p>
           </section>
         </div>
 
-
-      </div>
+        <DashboardPanel
+          title="Recent assignments"
+          subtitle="Latest work orders assigned to you"
+        >
+          <WorkOrderTable
+            rows={technicianStats.recentJobs}
+            emptyMessage="No jobs assigned yet. Check back once dispatch assigns work."
+            columns={[
+              { key: "wo", label: "WO", render: (w) => w.workOrderNumber || "-" },
+              { key: "title", label: "Title", render: (w) => w.title },
+              { key: "site", label: "Site", render: (w) => w.site?.siteName || "-" },
+              {
+                key: "status",
+                label: "Status",
+                render: (w) => <StatusBadge status={w.status} />
+              },
+              {
+                key: "sla",
+                label: "SLA",
+                render: (w) => <SlaBadge workOrder={w} />
+              }
+            ]}
+          />
+        </DashboardPanel>
+      </DashboardShell>
     );
   }
 
-  // ======================================================
-  // CUSTOMER DASHBOARD
-  // ======================================================
-
   if (role === "CUSTOMER") {
-    const statusColors = {
-      NEW: "#a8a29a",
-      CREATED: "#a8a29a",
-      ASSIGNED: "#c4785a",
-      IN_PROGRESS: "#6b7f5e",
-      ON_HOLD: "#d4a574",
-      COMPLETED: "#5c7a5e",
-      CLOSED: "#4a5d4e",
-      CANCELLED: "#9a4f3f"
-    };
     const statusSlices = Object.entries(customerStats.byStatus || {}).map(
       ([label, value]) => ({
         label,
         value,
-        color: statusColors[label] || "#7d8f6e"
+        color: STATUS_COLORS[label] || "#64748b",
+        gradient: STATUS_GRADIENTS[label] || [STATUS_COLORS[label] || "#64748b", "#475569"]
       })
     );
+    const assignedCount = customerStats.requests.filter((w) => w.assignedTechnician).length;
 
     return (
-      <div className="page">
-        <section className="hero">
-          <div className="radio-box">
-            📋
-          </div>
-
-          <div>
-            <p className="live">
-              CUSTOMER PORTAL
-            </p>
-
-            <h1>
-              Track your service requests
-            </h1>
-
-            <p>
-              Create service requests and monitor work order progress.
-            </p>
-          </div>
-        </section>
-
-        <AlertPills
-          items={[
-            { label: "Total requests created", value: customerStats.total },
-            { label: "My sites", value: customerStats.sites },
+      <DashboardShell
+        themeKey="manager"
+        eyebrow="Customer portal"
+        title="Track your service requests"
+        subtitle={
+          user?.customerName
+            ? `Welcome back. Here is the latest activity for ${user.customerName}.`
+            : "Create requests, follow progress, and stay informed on every site visit."
+        }
+        icon={ClipboardList}
+        action={
+          <button className="dash-btn" type="button" onClick={() => setPage("requests")}>
+            Create request
+          </button>
+        }
+      >
+        <StatCards
+          items={withStatTheme([
             {
-              label: "Assigned",
-              value: customerStats.requests.filter((w) => w.assignedTechnician).length
+              label: "Total requests",
+              value: customerStats.total,
+              icon: <FileText size={20} />,
+              tone: "accent"
             },
             {
-              label: "Unassigned",
-              value: customerStats.requests.filter((w) => !w.assignedTechnician).length
+              label: "My sites",
+              value: customerStats.sites,
+              icon: <MapPin size={20} />
+            },
+            {
+              label: "Assigned",
+              value: assignedCount,
+              icon: <Users size={20} />
+            },
+            {
+              label: "Awaiting assignment",
+              value: customerStats.total - assignedCount,
+              icon: <Clock3 size={20} />
             }
-          ]}
+          ])}
         />
 
         <div className="chart-grid">
-          <section className="panel">
-            <DonutChart title="Request status" slices={statusSlices} />
+          <section className="panel dash-panel">
+            <DonutChart
+              title="Request status"
+              subtitle="How your open and completed requests are distributed"
+              slices={statusSlices}
+            />
           </section>
-          <section className="panel">
-            <BarChart title="Assigned technician" data={customerStats.byAssignee} />
+          <section className="panel dash-panel">
+            <BarChart
+              title="Assigned technician"
+              subtitle="Who is handling your service requests"
+              data={customerStats.byAssignee}
+            />
           </section>
         </div>
 
-        <section className="panel">
-          <h2>My requests</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>WO</th>
-                <th>Title</th>
-                <th>Assigned to</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {customerStats.requests.length === 0 && (
-                <tr>
-                  <td colSpan="4">No requests created yet.</td>
-                </tr>
-              )}
-              {customerStats.requests.map((w) => (
-                <tr key={w.id}>
-                  <td>{w.workOrderNumber || "-"}</td>
-                  <td>{w.title}</td>
-                  <td>
-                    {w.assignedTechnician?.fullName ||
-                      w.assignedTechnician?.name ||
-                      "Unassigned"}
-                  </td>
-                  <td>
-                    <StatusBadge status={w.status} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-      </div>
+        <DashboardPanel
+          title="My requests"
+          subtitle="Live view of work orders for your organisation"
+        >
+          <WorkOrderTable
+            rows={customerStats.requests}
+            emptyMessage="No requests yet. Create your first service request to get started."
+            columns={[
+              { key: "wo", label: "WO", render: (w) => w.workOrderNumber || "-" },
+              { key: "title", label: "Title", render: (w) => w.title },
+              {
+                key: "assignee",
+                label: "Assigned to",
+                render: (w) =>
+                  w.assignedTechnician?.fullName ||
+                  w.assignedTechnician?.name ||
+                  "Unassigned"
+              },
+              {
+                key: "status",
+                label: "Status",
+                render: (w) => <StatusBadge status={w.status} />
+              }
+            ]}
+          />
+        </DashboardPanel>
+      </DashboardShell>
     );
   }
-
-  // ======================================================
-  // DISPATCHER DASHBOARD
-  // ======================================================
 
   if (role === "DISPATCHER") {
     return (
-      <div className="page">
-        <section className="hero">
-          <div className="radio-box">
-            📅
-          </div>
-
-          <div>
-            <p className="live">
-              DISPATCH CENTER
-            </p>
-
-            <h1>
-              Manage technician assignments
-            </h1>
-
-            <p>
-              Assign field technicians, schedule work orders,
-              and monitor ongoing jobs.
-            </p>
-          </div>
-
-          <button
-            className="watch"
-            onClick={() => setPage("workorders")}
-          >
-            Dispatch Jobs
+      <DashboardShell
+        themeKey="manager"
+        eyebrow="Dispatch center"
+        title="Coordinate the field team"
+        subtitle="Assign technicians, monitor workload, and keep service moving on schedule."
+        icon={CalendarClock}
+        action={
+          <button className="dash-btn" type="button" onClick={() => setPage("workorders")}>
+            Dispatch jobs
           </button>
-        </section>
-
-        <AlertPills
-          items={[
-            { label: "Total work orders", value: s.totalWorkOrders || 0 },
-            { label: "Technicians", value: s.availableTechnicians || 0 },
-            { label: "Customers", value: s.totalCustomers || 0 },
-            { label: "Critical", value: s.criticalWorkOrders || 0, tone: "warn" }
-          ]}
+        }
+      >
+        <StatCards
+          items={withStatTheme([
+            {
+              label: "Total work orders",
+              value: s.totalWorkOrders || 0,
+              icon: <ClipboardList size={20} />,
+              tone: "accent"
+            },
+            {
+              label: "Technicians",
+              value: s.availableTechnicians || 0,
+              icon: <Users size={20} />
+            },
+            {
+              label: "Customers",
+              value: s.totalCustomers || 0,
+              icon: <Building2 size={20} />
+            },
+            {
+              label: "Critical jobs",
+              value: s.criticalWorkOrders || 0,
+              icon: <AlertTriangle size={20} />,
+              tone: (s.criticalWorkOrders || 0) > 0 ? "warn" : "ok"
+            }
+          ])}
         />
 
         <div className="chart-grid">
-          <section className="panel">
+          <section className="panel dash-panel">
             <DonutChart
               title="Work order mix"
-              slices={[
-                { label: "New", value: s.createdWorkOrders || 0, color: "#a8a29a" },
-                { label: "Assigned", value: s.assignedWorkOrders || 0, color: "#c4785a" },
-                { label: "In progress", value: s.inProgressWorkOrders || 0, color: "#6b7f5e" },
-                { label: "Completed", value: s.completedWorkOrders || 0, color: "#5c7a5e" }
-              ]}
+              subtitle="Current pipeline across the operation"
+              slices={buildMixSlices(s)}
             />
           </section>
-          <section className="panel">
-            <BarChart title="Workload by technician" data={s.byTechnician || {}} />
+          <section className="panel dash-panel">
+            <BarChart
+              title="Workload by technician"
+              subtitle="Open assignments per field engineer"
+              data={s.byTechnician || {}}
+            />
           </section>
         </div>
 
-        <section className="panel">
-          <h2>
-            Work Orders Requiring Assignment
-          </h2>
-
-          <table>
-            <thead>
-              <tr>
-                <th>WO No</th>
-                <th>Customer</th>
-                <th>Site</th>
-                <th>Status</th>
-                <th>Priority</th>
-                <th>SLA</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {(s.recentWorkOrders || []).map((w) => (
-                <tr key={w.id}>
-                  <td>
-                    {w.workOrderNumber}
-                  </td>
-
-                  <td>
-                    {w.customer?.name}
-                  </td>
-
-                  <td>
-                    {w.site?.siteName}
-                  </td>
-
-                  <td>
-                    <StatusBadge status={w.status} />
-                  </td>
-
-                  <td>
-                    {w.priority}
-                  </td>
-                  <td>
-                    <SlaBadge workOrder={w} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-      </div>
+        <DashboardPanel
+          title="Work orders needing attention"
+          subtitle="Recent jobs to review, assign, or follow up"
+        >
+          <WorkOrderTable
+            rows={s.recentWorkOrders || []}
+            emptyMessage="No recent work orders to display."
+            columns={[
+              { key: "wo", label: "WO", render: (w) => w.workOrderNumber },
+              { key: "customer", label: "Customer", render: (w) => w.customer?.name },
+              { key: "site", label: "Site", render: (w) => w.site?.siteName },
+              {
+                key: "status",
+                label: "Status",
+                render: (w) => <StatusBadge status={w.status} />
+              },
+              { key: "priority", label: "Priority", render: (w) => w.priority },
+              {
+                key: "sla",
+                label: "SLA",
+                render: (w) => <SlaBadge workOrder={w} />
+              }
+            ]}
+          />
+        </DashboardPanel>
+      </DashboardShell>
     );
   }
 
-  // ======================================================
-  // MANAGER DASHBOARD
-  // ======================================================
-
   return (
-    <div className="page">
-      <section className="hero">
-        <div className="radio-box">
-          ⌁
-        </div>
-
-        <div>
-          <p className="live">
-            FIELD SERVICE CONTROL CENTER
-          </p>
-
-          <h1>
-            Manage and monitor field operations
-          </h1>
-
-          <p>
-            Full visibility of customers, technicians,
-            work orders, inventory and service metrics.
-          </p>
-        </div>
-
-        <button
-          className="watch"
-          onClick={() => setPage("workorders")}
-        >
-          Create Work Order
+    <DashboardShell
+      themeKey="manager"
+      eyebrow="Operations control"
+      title="Manage and monitor field operations"
+      subtitle="Full visibility across customers, technicians, inventory, and service performance."
+      icon={LayoutDashboard}
+      action={
+        <button className="dash-btn" type="button" onClick={() => setPage("workorders")}>
+          Create work order
         </button>
-      </section>
-
-      <AlertPills
-        items={[
-          { label: "Technicians", value: s.availableTechnicians || 0 },
-          { label: "Customers", value: s.totalCustomers || 0 },
-          { label: "Critical", value: s.criticalWorkOrders || 0, tone: (s.criticalWorkOrders || 0) > 0 ? "warn" : "" },
-          { label: "Overdue", value: s.overdueWorkOrders || 0, tone: (s.overdueWorkOrders || 0) > 0 ? "warn" : "ok" },
-          { label: "Low stock", value: s.lowStockParts || 0, tone: (s.lowStockParts || 0) > 0 ? "warn" : "" }
-        ]}
+      }
+    >
+      <StatCards
+        items={withStatTheme([
+          {
+            label: "Technicians",
+            value: s.availableTechnicians || 0,
+            icon: <Users size={20} />,
+            tone: "accent"
+          },
+          {
+            label: "Customers",
+            value: s.totalCustomers || 0,
+            icon: <Building2 size={20} />
+          },
+          {
+            label: "Critical",
+            value: s.criticalWorkOrders || 0,
+            icon: <AlertTriangle size={20} />,
+            tone: (s.criticalWorkOrders || 0) > 0 ? "warn" : "ok"
+          },
+          {
+            label: "Overdue",
+            value: s.overdueWorkOrders || 0,
+            icon: <Clock3 size={20} />,
+            tone: (s.overdueWorkOrders || 0) > 0 ? "warn" : "ok"
+          },
+          {
+            label: "Low stock",
+            value: s.lowStockParts || 0,
+            icon: <Package size={20} />,
+            tone: (s.lowStockParts || 0) > 0 ? "warn" : "ok",
+            hint:
+              (s.lowStockParts || 0) > 0
+                ? "Parts at or below reorder level"
+                : "Inventory levels look healthy"
+          }
+        ])}
       />
 
+      {(s.lowStockPartItems || []).length > 0 && (
+        <DashboardPanel
+          title="Low stock alerts"
+          subtitle="These parts need restocking soon"
+          action={
+            <button className="action-btn edit-btn" type="button" onClick={() => setPage("parts")}>
+              View inventory
+            </button>
+          }
+        >
+          <div className="dash-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Part</th>
+                  <th>Part no.</th>
+                  <th>Stock</th>
+                  <th>Reorder level</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(s.lowStockPartItems || []).map((part) => (
+                  <tr key={part.id} className="low-stock-row">
+                    <td>{part.partName}</td>
+                    <td>{part.partNumber}</td>
+                    <td>
+                      {part.stockQuantity}
+                      <span className="badge AT_RISK" style={{ marginLeft: 8 }}>
+                        Low
+                      </span>
+                    </td>
+                    <td>{part.reorderLevel}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </DashboardPanel>
+      )}
+
       <div className="chart-grid">
-        <section className="panel">
+        <section className="panel dash-panel">
           <DonutChart
             title="Work order mix"
-            slices={[
-              { label: "New", value: s.createdWorkOrders || 0, color: "#a8a29a" },
-              { label: "Assigned", value: s.assignedWorkOrders || 0, color: "#c4785a" },
-              { label: "In progress", value: s.inProgressWorkOrders || 0, color: "#6b7f5e" },
-              { label: "On hold", value: s.onHoldWorkOrders || 0, color: "#d4a574" },
-              { label: "Completed", value: s.completedWorkOrders || 0, color: "#5c7a5e" }
-            ]}
+            subtitle="Operational pipeline at a glance"
+            slices={buildMixSlices(s, true)}
           />
         </section>
-        <section className="panel">
+        <section className="panel dash-panel">
           <SlaGauge percent={s.slaCompliancePercent || 0} />
         </section>
       </div>
 
       <div className="chart-grid">
-        <section className="panel">
-          <BarChart title="Workload by technician" data={s.byTechnician || {}} />
+        <section className="panel dash-panel">
+          <BarChart
+            title="Workload by technician"
+            subtitle="Distribution of active assignments"
+            data={s.byTechnician || {}}
+          />
         </section>
-        <section className="panel">
-          <BarChart title="Workload by site" data={s.bySite || {}} />
+        <section className="panel dash-panel">
+          <BarChart
+            title="Workload by site"
+            subtitle="Where service demand is concentrated"
+            data={s.bySite || {}}
+          />
         </section>
       </div>
 
-      <section className="panel">
-        <h2>
-          Recent Work Orders
-        </h2>
-
-        <table>
-          <thead>
-            <tr>
-              <th>WO No</th>
-              <th>Title</th>
-              <th>Customer</th>
-              <th>Site</th>
-              <th>Status</th>
-              <th>Priority</th>
-              <th>SLA</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {(s.recentWorkOrders || []).map((w) => (
-              <tr key={w.id}>
-                <td>
-                  {w.workOrderNumber}
-                </td>
-
-                <td>
-                  {w.title}
-                </td>
-
-                <td>
-                  {w.customer?.name}
-                </td>
-
-                <td>
-                  {w.site?.siteName}
-                </td>
-
-                <td>
-                  <StatusBadge status={w.status} />
-                </td>
-
-                <td>
-                  {w.priority}
-                </td>
-                <td>
-                  <SlaBadge workOrder={w} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-    </div>
+      <DashboardPanel
+        title="Recent work orders"
+        subtitle="Latest activity across the service network"
+        action={
+          <button className="action-btn edit-btn" type="button" onClick={() => setPage("board")}>
+            Open board
+          </button>
+        }
+      >
+        <WorkOrderTable
+          rows={s.recentWorkOrders || []}
+          emptyMessage="No recent work orders yet."
+          columns={[
+            { key: "wo", label: "WO", render: (w) => w.workOrderNumber },
+            { key: "title", label: "Title", render: (w) => w.title },
+            { key: "customer", label: "Customer", render: (w) => w.customer?.name },
+            { key: "site", label: "Site", render: (w) => w.site?.siteName },
+            {
+              key: "status",
+              label: "Status",
+              render: (w) => <StatusBadge status={w.status} />
+            },
+            { key: "priority", label: "Priority", render: (w) => w.priority },
+            {
+              key: "sla",
+              label: "SLA",
+              render: (w) => <SlaBadge workOrder={w} />
+            }
+          ]}
+        />
+      </DashboardPanel>
+    </DashboardShell>
   );
 }

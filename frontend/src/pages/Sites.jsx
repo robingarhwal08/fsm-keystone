@@ -13,8 +13,9 @@ export default function Sites() {
   const [rows, setRows] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [showForm, setShowForm] = useState(false);
 
-  const [f, setF] = useState({
+  const emptyForm = {
     siteName: "",
     address: "",
     city: "",
@@ -23,7 +24,9 @@ export default function Sites() {
     contactPerson: "",
     contactPhone: "",
     customer: { id: "" }
-  });
+  };
+
+  const [f, setF] = useState(emptyForm);
 
   const load = () => {
 
@@ -69,17 +72,9 @@ export default function Sites() {
       }
 
       setEditingId(null);
+      setShowForm(false);
 
-      setF({
-        siteName: "",
-        address: "",
-        city: "",
-        state: "",
-        pincode: "",
-        contactPerson: "",
-        contactPhone: "",
-        customer: { id: "" }
-      });
+      setF(emptyForm);
 
       load();
 
@@ -91,6 +86,7 @@ export default function Sites() {
   const editSite = (site) => {
 
     setEditingId(site.id);
+    setShowForm(true);
 
     setF({
       siteName: site.siteName || "",
@@ -132,30 +128,16 @@ export default function Sites() {
   const resetForm = () => {
 
     setEditingId(null);
+    setShowForm(false);
 
-    setF({
-      siteName: "",
-      address: "",
-      city: "",
-      state: "",
-      pincode: "",
-      contactPerson: "",
-      contactPhone: "",
-      customer: { id: "" }
-    });
+    setF(emptyForm);
   };
 
   return (
 
-    <div
-        className="page"
-        style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "24px"
-        }}
-    >
+    <div className="page page-stack">
 
+      {(showForm || editingId) && (
       <form
         className="panel"
         onSubmit={save}
@@ -301,38 +283,45 @@ export default function Sites() {
             }
           </button>
 
-          {
-            editingId && (
-
-              <button
-                type="button"
-                className="action-btn cancel-btn"
-                onClick={resetForm}
-              >
-                Cancel
-              </button>
-
-            )
-          }
+          <button
+            type="button"
+            className="action-btn cancel-btn"
+            onClick={resetForm}
+          >
+            Cancel
+          </button>
 
         </div>
 
       </form>
+      )}
 
       <section className="panel">
 
+        <div className="panel-head">
         <h2>Sites</h2>
+        {!showForm && !editingId && (
+          <button
+            type="button"
+            className="primary"
+            onClick={() => setShowForm(true)}
+          >
+            New Site
+          </button>
+        )}
+        </div>
 
-        <table>
+        <div className="list-table-wrap">
+        <table className="list-table">
 
           <thead>
 
             <tr>
-              <th>Site</th>
-              <th>Customer</th>
-              <th>City</th>
-              <th>Contact</th>
-              <th>Actions</th>
+              <th className="col-site">Site</th>
+              <th className="col-customer">Customer</th>
+              <th className="col-city">City</th>
+              <th className="col-contact">Contact</th>
+              <th className="col-actions">Actions</th>
             </tr>
 
           </thead>
@@ -360,8 +349,8 @@ export default function Sites() {
                     {s.contactPerson}
                   </td>
 
-                  <td>
-
+                  <td className="table-actions-cell">
+                    <div className="table-actions">
                     <button
                       type="button"
                       className="action-btn edit-btn"
@@ -381,7 +370,7 @@ export default function Sites() {
                     >
                       Delete
                     </button>
-
+                    </div>
                   </td>
 
                 </tr>
@@ -392,6 +381,7 @@ export default function Sites() {
           </tbody>
 
         </table>
+        </div>
 
       </section>
 

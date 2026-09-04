@@ -110,6 +110,14 @@ public class NotificationService {
                 actor);
     }
 
+    public void notifyAdminsOfSignupRequest(AppUser newUser) {
+        String message = newUser.getFullName() + " (" + newUser.getEmail()
+                + ") requested " + newUser.getRole() + " account access.";
+        for (AppUser admin : userRepository.findByRole(Role.ADMIN)) {
+            notify(admin, null, "SIGNUP_REQUEST", message);
+        }
+    }
+
     @Transactional(readOnly = true)
     public List<NotificationResponse> myNotifications() {
         AppUser user = currentUserService.requireUser();
@@ -143,5 +151,11 @@ public class NotificationService {
                 saved.getCreatedAt(),
                 saved.getWorkOrder() == null ? null : saved.getWorkOrder().getWorkOrderNumber()
         );
+    }
+
+    @Transactional
+    public int markAllRead() {
+        AppUser user = currentUserService.requireUser();
+        return notificationRepository.markAllReadByUserId(user.getId());
     }
 }
